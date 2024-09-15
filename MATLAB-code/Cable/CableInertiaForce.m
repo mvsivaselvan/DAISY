@@ -17,7 +17,7 @@ function [F, mu, ...
 % varThetadot = \dot{vartheta}
 % varThetaddot = \ddot{vartheta}
 % R0 = cell array of orientations in the reference configuration at the
-%      quadrature points
+%      quadrature points (+ the two end points)
 % rho = mass per unit length
 % II = body frame mass moment of inertia (3x3 matrix) per unit length
 % sg = quadrature points
@@ -106,7 +106,7 @@ for n = 1:ncolloc
     ct = cos(thet);
     htau0 = hat(tau0);
 
-    R0_ = R0{n};
+    R0_ = R0(:,3*n+1:3*n+3);
     Theta = I3 + st*htau0 + (1-ct)*(htau0^2);
     
     PP = I3 - tau*tau';

@@ -16,7 +16,7 @@ function [F, mu, ...
 % varTheta = spline twist DOF (\vartheta)
 % varThetdot = \dot{vartheta}
 % R0 = cell array of orientations in the reference configuration at the
-%      quadrature points
+%      quadrature points (+ the two end points)
 % rho = mass per unit length
 % EA = section axial rigidity
 % EI = section bending rigidity
@@ -58,6 +58,8 @@ Dm22 = diag([betTOR*GJ, betBEND*EI, betBEND*EI]);
 % number of quadrature (or collocation) points 
 ncolloc = length(wg);
 
+I3 = eye(3);
+
 % Compute coefficients for the projected strain
 bepsbar = zeros(Nbar,1);
 bepsdbar = zeros(Nbar,1);
@@ -87,6 +89,35 @@ cepsdbar = Mbar\bepsdbar;
 % assembled. The code is organized in this way because 
 % there is significant repetition of code between the two
 % passes
+%----------------------------------------------------------------------
+% The following two allocations are to define size for code generation
+bNbar = zeros(Nbar, 1); % allocate, computed in pass 1
+cNbar = zeros(Nbar, 1); % allocate, computed in pass 1
+F_ = zeros(3*(d+1),1); % allocate, computed in pass 2
+F = zeros(size(P(:))); % Generalized force
+mu = zeros(size(varTheta)); % Generalized moment
+if (nargout > 2)
+    bepscomma = zeros(Nbar,3*N);
+    bepscomma_ = zeros(dbar+1,3*(d+1)); % temp storage
+    bepsdcomma = zeros(Nbar,3*N);
+    bepsdcomma_ = zeros(dbar+1,3*(d+1)); % temp storage
+    F_ij = zeros(3*N,3*N);
+    F_ij_ = zeros(3*(d+1),3*(d+1)); % temp storage
+    F_ib = zeros(3*N,Nbrev);
+    F_ib_ = zeros(3*(d+1),dbrev+1); % temp storage
+    F_ijd = zeros(3*N,3*N);
+    F_ijd_ = zeros(3*(d+1),3*(d+1)); % temp storage
+    F_ibd  = zeros(3*N,Nbrev);
+    F_ibd_ = zeros(3*(d+1),dbrev+1); % temp storage
+    mu_aj = zeros(Nbrev,3*N);
+    mu_aj_ = zeros(dbrev+1,3*(d+1)); % temp storage
+    mu_ab = zeros(Nbrev,Nbrev);
+    mu_ab_ = zeros(dbrev+1,dbrev+1); % temp storage
+    mu_ajd = zeros(Nbrev,3*N);
+    mu_abd = zeros(Nbrev,Nbrev);
+    mu_abd_ = zeros(dbrev+1,dbrev+1); % temp storage
+end
+%----------------------------------------------------------------------
 for pass = 1:2 
     if pass == 1
         bNbar = zeros(Nbar,1);
@@ -145,7 +176,7 @@ for pass = 1:2
         K = mycross(xip,xipp)/nxip^2;
         G = (tau0'*K)*(2*tau0+tau)- (K0'*tau)*tau0;
         rr = K - K0 - G/(1+tau0'*tau);
-        PP = eye(3) - tau*tau';
+        PP = I3 - tau*tau';
         L_tauI = PP/nxip;
         L_KI = ((-2/nxip)*tau)*K' + hat(xipp/nxip^2);
         L_GI = (L_KI*tau0)*(2*tau0+tau)' + (tau0'*K)*L_tauI ...
@@ -166,7 +197,8 @@ for pass = 1:2
         htau0 = hat(tau0);
         tau0p = (xi0pp - (tau0'*xi0pp)*tau0)/nxi0p;
 
-        Theta = eye(3) + st*htau0 + (1-ct)*(htau0^2);
+        R0_ = R0(:,3*n+1:3*n+3);
+        Theta = I3 + st*htau0 + (1-ct)*(htau0^2);
         ww = thetp*tau0 + st*tau0p - (1-ct)*mycross(tau0,tau0p);
 
         L_chiO = (mycross(rr,tau0) + tau0p)';
@@ -174,9 +206,9 @@ for pass = 1:2
 
         % calculate epsilon, epsilond, kappa, kappad
         epsbar = cepsbar'*Bbar;
-        kappa = (R0{n}'*(Theta'*rr + ww))/nxi0p;
+        kappa = (R0_'*(Theta'*rr + ww))/nxi0p;
         epsdbar = cepsdbar'*Bbar;
-        kappad = (R0{n}'*Theta'*(L_rrI'*xipd + L_rrII'*xippd ...
+        kappad = (R0_'*Theta'*(L_rrI'*xipd + L_rrII'*xippd ...
                 + L_chiO'*thetd + L_chiI'*thetpd))/nxi0p;
             
         if pass == 1
@@ -186,7 +218,7 @@ for pass = 1:2
         else % pass == 2
             Nbar = cNbar'*Bbar;
             MM = Em12'*epsbar + Em22*kappa + Dm12'*epsdbar + Dm22*kappad;
-            mm = Theta*R0{n}*MM;
+            mm = Theta*R0_*MM;
             F1 = -(rho*nxi0p)*u;
             F2 = tau*Nbar + L_rrI*mm;
             F3 = L_rrII*mm;
@@ -204,7 +236,7 @@ for pass = 1:2
                 taud = (PP*xipd)/nxip;
                 rrd = L_rrI'*xipd + L_rrII'*xippd;
                 XX = mycross(mycross(rr,tau0),tau0) - mycross(tau0,tau0p);
-                ThetaR0 = Theta*R0{n};
+                ThetaR0 = Theta*R0_;
                 E22 = (ThetaR0*Em22*ThetaR0')/nxi0p;
                 D22 = (ThetaR0*Dm22*ThetaR0')/nxi0p;
                 UU = Qtil_rr_I(xipd) + Qtil_rr_IV(xippd) ...
@@ -396,7 +428,7 @@ end
 % functions related to K
     function Q = Q_K_I(eta)
         LKIeta = L_KI*eta;
-        Q = -(((eta'*K)/nxip)*eye(3) + tau*LKIeta' + LKIeta*tau')*(2/nxip);
+        Q = -(((eta'*K)/nxip)*I3 + tau*LKIeta' + LKIeta*tau')*(2/nxip);
     end
 
     function Q = Q_K_III(eta)
@@ -404,7 +436,7 @@ end
     end
 
     function Q = Qtil_K_I(nu)
-        Q = -(2/nxip)*((K*nu')/nxip + L_KI'*(nu*tau'+(tau'*nu)*eye(3)));
+        Q = -(2/nxip)*((K*nu')/nxip + L_KI'*(nu*tau'+(tau'*nu)*I3));
     end
 
     function Q = Qtil_K_III(nu)

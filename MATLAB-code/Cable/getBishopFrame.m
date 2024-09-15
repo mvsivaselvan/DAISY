@@ -32,11 +32,12 @@ k = 0.1; % feedback gain to prevent drift of q from unit norm
 opt = odeset('RelTol',2.5e-14,'AbsTol',1e-16);
 [~,Q] = ode45(@Bishop,xg,q0,opt);
 
-R = cell(length(xg),1);
+ng = length(xg);
+R = zeros(3,3*ng);
 
-for n = 1:length(xg)
+for n = 1:ng
     qn = Q(n,:)';
-    R{n} = quat2rot(qn);
+    R(:,3*(n-1)+1:3*(n-1)+3) = quat2rot(qn);
 end
 
     function qdot = Bishop(x, q)
