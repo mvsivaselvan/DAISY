@@ -26,8 +26,9 @@ if (nargin < 5) % q0 not provided
     end
 end
     
-
 k = 0.1; % feedback gain to prevent drift of q from unit norm
+
+I3 = [1 0 0; 0 1 0; 0 0 0];
 
 opt = odeset('RelTol',2.5e-14,'AbsTol',1e-16);
 [~,Q] = ode45(@Bishop,xg,q0,opt);
@@ -45,17 +46,23 @@ end
         % B = colmat(1,:)'; % not used
         Bp = colmat(2,:)';
         Bpp = colmat(3,:)';
-        
+
         xip = P*Bp;
         xipp = P*Bpp;
-        
+
         nxip = norm(xip);
+        if (nxip == 0) % This situation will never heppen, it is to avoid
+                       % nan and inf checks in code generation
+            qdot = [0; 0; 0; 0];
+            return
+        end
+
         tau = xip/nxip;
-        
-        PP = eye(3) - tau*tau';
+
+        PP = I3 - tau*tau';
         taup = (PP*xipp)/nxip;
-        
-        omega = cross(tau, taup);
+
+        omega = mycross(tau, taup);
         Omega = [0 -omega'; omega hat(omega)];
         
         qdot = 0.5*Omega*q + k/2/norm(q)^2*(1 - q'*q)*q;        
