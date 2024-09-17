@@ -1,0 +1,4 @@
+Currently working with SUNDIALS version 7.1.1
+Open Intel oneAPI command prompt for Intel 64 for Visual Studio 2022
+cmake -G "Ninja" -B .\build\ -DCMAKE_C_COMPILER=icx -DBUILD_FORTRAN_MODULE_INTERFACE=ON -DCMAKE_Fortran_COMPILER=ifx -DBUILD_SHARED_LIBS=OFF
+cmake --build .\build
