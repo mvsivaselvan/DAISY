@@ -1,4 +1,4 @@
-function R = getBishopFrame(P, knots, d, xg, q0)
+function R = getBishopFrame(P, knots, d, xg)
 
 % Computes the (twist-free) Bishop framing of a given curve
 % INPUTS
@@ -13,22 +13,23 @@ function R = getBishopFrame(P, knots, d, xg, q0)
 % R = cell array with length(xg) rotation matrices defining the Bishop
 %     frame
 
-if (nargin < 5) % q0 not provided
-    tau0 = (P(:,2) - P(:,1));
-    tau0 = tau0/norm(tau0);
-    theta = acos(tau0(1)); % tau0(1) = dot product of tau0 with [1;0;0]
-    if (abs(theta) < 1e-15) % tau0 is oriented along [1;0;0]
-        q0 = [1; 0; 0; 0];
-    else
-        rotaxis = [0; -tau0(3); tau0(2)]/sqrt(tau0(2)^2+tau0(3)^2); 
-                    % i.e. unit vector along cross([1;0;0],tau0)
-        q0 = [cos(theta/2); sin(theta/2)*rotaxis];
-    end
+tau0 = (P(:,2) - P(:,1));
+tau0 = tau0/norm(tau0);
+theta = acos(tau0(1)); % tau0(1) = dot product of tau0 with [1;0;0]
+if (abs(theta) < 1e-15) % tau0 is oriented along [1;0;0]
+    q0 = [1; 0; 0; 0];
+else
+    rotaxis = [0; -tau0(3); tau0(2)]/sqrt(tau0(2)^2+tau0(3)^2);
+    % i.e. unit vector along cross([1;0;0],tau0)
+    q0 = [cos(theta/2); sin(theta/2)*rotaxis];
 end
+
     
 k = 0.1; % feedback gain to prevent drift of q from unit norm
 
 I3 = [1 0 0; 0 1 0; 0 0 0];
+
+N = length(knots) - d - 1;
 
 opt = odeset('RelTol',2.5e-14,'AbsTol',1e-16);
 [~,Q] = ode45(@Bishop,xg,q0,opt);
@@ -42,7 +43,11 @@ for n = 1:ng
 end
 
     function qdot = Bishop(x, q)
-        colmat = spcol(knots, d+1, [x; x; x]);
+        if (coder.target('MATLAB')) % running in MATLAB
+           colmat = spcol(knots, d+1, [x;x;x]);
+        else % generating code
+           colmat = spcolC(knots, d+1, x, 3);
+        end
         % B = colmat(1,:)'; % not used
         Bp = colmat(2,:)';
         Bpp = colmat(3,:)';

@@ -58,10 +58,6 @@ function [Fb, Kb, Cb, Mb, Bb] ...
 % Mb = inertia matrix Fb_{i,jddot}
 % Bb = derivate of force w.r.t. input
 
-if nargin<57
-    alph0 = 0;
-end
-
 NG = length(sg);
 R01 = R0(:,1:3);
 R0end = R0(:,(NG+1)*3+(1:3));
