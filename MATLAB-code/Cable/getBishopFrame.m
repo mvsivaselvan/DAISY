@@ -14,7 +14,8 @@ function R = getBishopFrame(P, knots, d, xg)
 %     frame
 
 tau0 = (P(:,2) - P(:,1));
-tau0 = tau0/norm(tau0);
+normtau0 = sqrt(tau0'*tau0);
+tau0 = tau0/normtau0;
 theta = acos(tau0(1)); % tau0(1) = dot product of tau0 with [1;0;0]
 if (abs(theta) < 1e-15) % tau0 is oriented along [1;0;0]
     q0 = [1; 0; 0; 0];
@@ -24,12 +25,7 @@ else
     q0 = [cos(theta/2); sin(theta/2)*rotaxis];
 end
 
-    
-k = 0.1; % feedback gain to prevent drift of q from unit norm
-
 I3 = [1 0 0; 0 1 0; 0 0 0];
-
-N = length(knots) - d - 1;
 
 opt = odeset('RelTol',2.5e-14,'AbsTol',1e-16);
 [~,Q] = ode45(@Bishop,xg,q0,opt);
@@ -55,12 +51,12 @@ end
         xip = P*Bp;
         xipp = P*Bpp;
 
-        nxip = norm(xip);
-        if (nxip == 0) % This situation will never heppen, it is to avoid
-                       % nan and inf checks in code generation
-            qdot = [0; 0; 0; 0];
-            return
-        end
+        nxip = sqrt(xip'*xip);
+        % if (nxip == 0) % This situation will never heppen, it is to avoid
+        %                % nan and inf checks in code generation
+        %     qdot = [0; 0; 0; 0];
+        %     return
+        % end
 
         tau = xip/nxip;
 
@@ -69,12 +65,16 @@ end
 
         omega = mycross(tau, taup);
         Omega = [0 -omega'; omega hat(omega)];
+
+        k = 0.1; % feedback gain to prevent drift of q from unit norm
         
-        qdot = 0.5*Omega*q + k/2/norm(q)^2*(1 - q'*q)*q;        
+        qTq = q'*q;
+        qdot = 0.5*Omega*q + k/2/qTq*(1 - qTq)*q;        
     end
 
     function RR = quat2rot(qq)
-        RR = 1/norm(qq)^2 * ...
+        normqq = sqrt(qq'*qq);
+        RR = 1/normqq^2 * ...
            [qq(1)^2+qq(2)^2-qq(3)^2-qq(4)^2 2*(qq(2)*qq(3)-qq(1)*qq(4)) ...
                                            2*(qq(2)*qq(4)+qq(1)*qq(3)); ...
             2*(qq(2)*qq(3)+qq(1)*qq(4)) qq(1)^2+qq(3)^2-qq(2)^2-qq(4)^2 ...
