@@ -18,6 +18,66 @@
       <Platform>x64</Platform>
     </ProjectConfiguration>
   </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\MATLAB\MATLABelements\blkdiag.c" />
+    <ClCompile Include="..\..\MATLAB\MATLABelements\CableBCTransinCoord.c" />
+    <ClCompile Include="..\..\MATLAB\MATLABelements\CableForce.c" />
+    <ClCompile Include="..\..\MATLAB\MATLABelements\CableForceInputDerivative.c" />
+    <ClCompile Include="..\..\MATLAB\MATLABelements\CableForceRotBCinCoord.c" />
+    <ClCompile Include="..\..\MATLAB\MATLABelements\CableForceRotBCinCoord_data.c" />
+    <ClCompile Include="..\..\MATLAB\MATLABelements\CableForceRotBCinCoord_emxAPI.c" />
+    <ClCompile Include="..\..\MATLAB\MATLABelements\CableForceRotBCinCoord_emxutil.c" />
+    <ClCompile Include="..\..\MATLAB\MATLABelements\CableForceRotBCinCoord_initialize.c" />
+    <ClCompile Include="..\..\MATLAB\MATLABelements\CableForceRotBCinCoord_terminate.c" />
+    <ClCompile Include="..\..\MATLAB\MATLABelements\CableInertiaForce.c" />
+    <ClCompile Include="..\..\MATLAB\MATLABelements\CableMbar.c" />
+    <ClCompile Include="..\..\MATLAB\MATLABelements\diag.c" />
+    <ClCompile Include="..\..\MATLAB\MATLABelements\eml_rand_mt19937ar_stateful.c" />
+    <ClCompile Include="..\..\MATLAB\MATLABelements\getBishopFrame.c" />
+    <ClCompile Include="..\..\MATLAB\MATLABelements\mldivide.c" />
+    <ClCompile Include="..\..\MATLAB\MATLABelements\mrdivide_helper.c" />
+    <ClCompile Include="..\..\MATLAB\MATLABelements\mtimes.c" />
+    <ClCompile Include="..\..\MATLAB\MATLABelements\norm.c" />
+    <ClCompile Include="..\..\MATLAB\MATLABelements\qrsolve.c" />
+    <ClCompile Include="..\..\MATLAB\MATLABelements\RigidBodyForce.c" />
+    <ClCompile Include="..\..\MATLAB\MATLABelements\rothelper.c" />
+    <ClCompile Include="..\..\MATLAB\MATLABelements\SplineApproximation.c" />
+    <ClCompile Include="..\..\MATLAB\MATLABelements\xgeqp3.c" />
+    <ClCompile Include="..\..\MATLAB\MATLABelements\xgetrf.c" />
+    <ClCompile Include="..\..\MATLAB\MATLABelements\xnrm2.c" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\MATLAB\MATLABelements\blkdiag.h" />
+    <ClInclude Include="..\..\MATLAB\MATLABelements\CableBCTransinCoord.h" />
+    <ClInclude Include="..\..\MATLAB\MATLABelements\CableForce.h" />
+    <ClInclude Include="..\..\MATLAB\MATLABelements\CableForceInputDerivative.h" />
+    <ClInclude Include="..\..\MATLAB\MATLABelements\CableForceRotBCinCoord.h" />
+    <ClInclude Include="..\..\MATLAB\MATLABelements\CableForceRotBCinCoord_data.h" />
+    <ClInclude Include="..\..\MATLAB\MATLABelements\CableForceRotBCinCoord_emxAPI.h" />
+    <ClInclude Include="..\..\MATLAB\MATLABelements\CableForceRotBCinCoord_emxutil.h" />
+    <ClInclude Include="..\..\MATLAB\MATLABelements\CableForceRotBCinCoord_initialize.h" />
+    <ClInclude Include="..\..\MATLAB\MATLABelements\CableForceRotBCinCoord_internal_types.h" />
+    <ClInclude Include="..\..\MATLAB\MATLABelements\CableForceRotBCinCoord_terminate.h" />
+    <ClInclude Include="..\..\MATLAB\MATLABelements\CableForceRotBCinCoord_types.h" />
+    <ClInclude Include="..\..\MATLAB\MATLABelements\CableInertiaForce.h" />
+    <ClInclude Include="..\..\MATLAB\MATLABelements\CableMbar.h" />
+    <ClInclude Include="..\..\MATLAB\MATLABelements\diag.h" />
+    <ClInclude Include="..\..\MATLAB\MATLABelements\eml_rand_mt19937ar_stateful.h" />
+    <ClInclude Include="..\..\MATLAB\MATLABelements\getBishopFrame.h" />
+    <ClInclude Include="..\..\MATLAB\MATLABelements\mldivide.h" />
+    <ClInclude Include="..\..\MATLAB\MATLABelements\mrdivide_helper.h" />
+    <ClInclude Include="..\..\MATLAB\MATLABelements\mtimes.h" />
+    <ClInclude Include="..\..\MATLAB\MATLABelements\norm.h" />
+    <ClInclude Include="..\..\MATLAB\MATLABelements\qrsolve.h" />
+    <ClInclude Include="..\..\MATLAB\MATLABelements\RigidBodyForce.h" />
+    <ClInclude Include="..\..\MATLAB\MATLABelements\rothelper.h" />
+    <ClInclude Include="..\..\MATLAB\MATLABelements\rtwtypes.h" />
+    <ClInclude Include="..\..\MATLAB\MATLABelements\SplineApproximation.h" />
+    <ClInclude Include="..\..\MATLAB\MATLABelements\tmwtypes.h" />
+    <ClInclude Include="..\..\MATLAB\MATLABelements\xgeqp3.h" />
+    <ClInclude Include="..\..\MATLAB\MATLABelements\xgetrf.h" />
+    <ClInclude Include="..\..\MATLAB\MATLABelements\xnrm2.h" />
+  </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>17.0</VCProjectVersion>
     <Keyword>Win32Proj</Keyword>
@@ -110,7 +170,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
     </ClCompile>
     <Link>
@@ -127,7 +187,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>NDEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
     </ClCompile>
     <Link>
@@ -138,19 +198,6 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
   </ItemDefinitionGroup>
-  <ItemGroup>
-    <ClInclude Include="framework.h" />
-    <ClInclude Include="pch.h" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClCompile Include="MATLABelementsLib.cpp" />
-    <ClCompile Include="pch.cpp">
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
-    </ClCompile>
-  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
