@@ -1,6 +1,8 @@
 program main
     
 use GaussQuad
+use emxArray
+use MATLABelements
     
 implicit none
 

@@ -8,12 +8,23 @@ EndProject
 Project("{6989167D-11E4-40FE-8C1A-2192A86A7E90}") = "SplineLib", "SplineLib\SplineLib.vfproj", "{E3347E5D-8966-4D95-A028-48344077EA7B}"
 EndProject
 Project("{6989167D-11E4-40FE-8C1A-2192A86A7E90}") = "SplineFortranTest", "SplineFortranTest\SplineFortranTest.vfproj", "{4C5B9A02-65A5-491D-8873-F2EBA2783C57}"
+	ProjectSection(ProjectDependencies) = postProject
+		{E3347E5D-8966-4D95-A028-48344077EA7B} = {E3347E5D-8966-4D95-A028-48344077EA7B}
+	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SplineCTest", "SplineCTest\SplineCTest.vcxproj", "{0F5179BD-8B25-4083-9C7C-26E0D94CE946}"
+	ProjectSection(ProjectDependencies) = postProject
+		{E3347E5D-8966-4D95-A028-48344077EA7B} = {E3347E5D-8966-4D95-A028-48344077EA7B}
+	EndProjectSection
 EndProject
 Project("{6989167D-11E4-40FE-8C1A-2192A86A7E90}") = "FortranInterfaces", "FortranInterfaces\FortranInterfaces.vfproj", "{AE4FABFF-BE21-4B47-8655-7A767B1534B8}"
 EndProject
 Project("{6989167D-11E4-40FE-8C1A-2192A86A7E90}") = "Template2Structure", "Template2Structure\Template2Structure.vfproj", "{5E21EDDD-0148-47AE-BD47-A64B1BE06767}"
+	ProjectSection(ProjectDependencies) = postProject
+		{50BD0EC8-E4D6-47A5-981F-C79E2673D12D} = {50BD0EC8-E4D6-47A5-981F-C79E2673D12D}
+		{AE4FABFF-BE21-4B47-8655-7A767B1534B8} = {AE4FABFF-BE21-4B47-8655-7A767B1534B8}
+		{E3347E5D-8966-4D95-A028-48344077EA7B} = {E3347E5D-8966-4D95-A028-48344077EA7B}
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

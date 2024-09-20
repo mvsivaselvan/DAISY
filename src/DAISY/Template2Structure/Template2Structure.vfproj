@@ -18,7 +18,7 @@
 		</Configuration>
 		<Configuration Name="Debug|x64" UseCompiler="ifxCompiler">
 			<Tool Name="VFFortranCompilerTool" SuppressStartupBanner="true" DebugInformationFormat="debugEnabled" Optimization="optimizeDisabled" AdditionalIncludeDirectories="C:\Users\mvs\source\repos\DAISY\src\DAISY\FortranInterfaces\x64\Debug;C:\Users\mvs\source\repos\DAISY\src\DAISY\SplineLib\x64\Debug" WarnInterfaces="true" Traceback="true" BoundsCheck="true" StackFrameCheck="true" RuntimeLibrary="rtMultiThreadedDebugDLL"/>
-			<Tool Name="VFLinkerTool" LinkIncremental="linkIncrementalNo" SuppressStartupBanner="true" AdditionalLibraryDirectories="C:\Users\mvs\source\repos\DAISY\src\DAISY\FortranInterfaces\x64\Debug;C:\Users\mvs\source\repos\DAISY\src\DAISY\x64\Debug;C:\Users\mvs\source\repos\DAISY\src\DAISY\SplineLib\x64\Debug" GenerateDebugInformation="true" SubSystem="subSystemConsole" AdditionalDependencies="SplineLib.lib"/>
+			<Tool Name="VFLinkerTool" LinkIncremental="linkIncrementalNo" SuppressStartupBanner="true" AdditionalLibraryDirectories="C:\Users\mvs\source\repos\DAISY\src\DAISY\SplineLib\x64\Debug;C:\Users\mvs\source\repos\DAISY\src\DAISY\FortranInterfaces\x64\Debug;C:\Users\mvs\source\repos\DAISY\src\DAISY\x64\Debug" GenerateDebugInformation="true" SubSystem="subSystemConsole" AdditionalDependencies="SplineLib.lib FortranInterfaces.lib MATLABelementsLib.lib"/>
 			<Tool Name="VFResourceCompilerTool"/>
 			<Tool Name="VFMidlTool" SuppressStartupBanner="true" TargetEnvironment="midlTargetAMD64"/>
 			<Tool Name="VFCustomBuildTool"/>

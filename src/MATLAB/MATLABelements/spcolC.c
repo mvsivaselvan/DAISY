@@ -24,6 +24,9 @@ void spcolC(const emxArray_real_T *knots, double k, emxArray_real_T *colmat)
   /*  Code generated for this function will be deleted. The function spcolC in
    */
   /*  a Spline library will actually compute the necessary */
+  /*  This is the C prototype: */
+  /*  spcolC(double* knots, int nknots, int k, double* colpts, int ncolpts,  */
+  /*         int nderiv, double* colmat, int ncolmat); */
   b_rand((double)knots->size[1] - k, colmat);
 }
 
