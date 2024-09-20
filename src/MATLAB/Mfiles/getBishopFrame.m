@@ -42,7 +42,7 @@ end
         if (coder.target('MATLAB')) % running in MATLAB
            colmat = spcol(knots, d+1, [x;x;x]);
         else % generating code
-           colmat = spcolC(knots, d+1, x, 3);
+           colmat = spcolC(knots, length(knots), d+1, x, 1, 3);
         end
         % B = colmat(1,:)'; % not used
         Bp = colmat(2,:)';
