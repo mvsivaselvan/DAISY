@@ -11,6 +11,8 @@ Project("{6989167D-11E4-40FE-8C1A-2192A86A7E90}") = "SplineFortranTest", "Spline
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SplineCTest", "SplineCTest\SplineCTest.vcxproj", "{0F5179BD-8B25-4083-9C7C-26E0D94CE946}"
 EndProject
+Project("{6989167D-11E4-40FE-8C1A-2192A86A7E90}") = "FortranInterfaces", "FortranInterfaces\FortranInterfaces.vfproj", "{AE4FABFF-BE21-4B47-8655-7A767B1534B8}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -51,6 +53,14 @@ Global
 		{0F5179BD-8B25-4083-9C7C-26E0D94CE946}.Release|x64.Build.0 = Release|x64
 		{0F5179BD-8B25-4083-9C7C-26E0D94CE946}.Release|x86.ActiveCfg = Release|Win32
 		{0F5179BD-8B25-4083-9C7C-26E0D94CE946}.Release|x86.Build.0 = Release|Win32
+		{AE4FABFF-BE21-4B47-8655-7A767B1534B8}.Debug|x64.ActiveCfg = Debug|x64
+		{AE4FABFF-BE21-4B47-8655-7A767B1534B8}.Debug|x64.Build.0 = Debug|x64
+		{AE4FABFF-BE21-4B47-8655-7A767B1534B8}.Debug|x86.ActiveCfg = Debug|Win32
+		{AE4FABFF-BE21-4B47-8655-7A767B1534B8}.Debug|x86.Build.0 = Debug|Win32
+		{AE4FABFF-BE21-4B47-8655-7A767B1534B8}.Release|x64.ActiveCfg = Release|x64
+		{AE4FABFF-BE21-4B47-8655-7A767B1534B8}.Release|x64.Build.0 = Release|x64
+		{AE4FABFF-BE21-4B47-8655-7A767B1534B8}.Release|x86.ActiveCfg = Release|Win32
+		{AE4FABFF-BE21-4B47-8655-7A767B1534B8}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
