@@ -14,7 +14,6 @@ Ng = 3; % number of Gauss points per element
     = CableSplineSetup(N, d, dbrev, dbar, Ng);
 
 % Reference geometry - cicular arc
-addpath ./ReferenceGeometry
 span = 125; % in
 slack = 2; % in
 L = span + slack; % length
@@ -24,7 +23,6 @@ curve_gamm = @(s)myCircle(s,R,-2*pi/3,-pi/3);
 [P0, ~] = SplineApproximation(gamm_, J_, N, sg, wg, colmat);
 P0 = P0 - P0(:,1); % translate start end to origin
 R0 = getBishopFrame(P0, knots, d, [0; sg; 1]);
-rmpath ./ReferenceGeometry
 
 if (~coder.target('MATLAB')) % generating code, so spcol not called in
                              % getBishopFrame, and loading R0 from a
