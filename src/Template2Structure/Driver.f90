@@ -1,8 +1,7 @@
 program main
     
-use GaussQuad
-use emxArray
-use MATLABelements
+use CableElement
+
     
 implicit none
 
@@ -12,13 +11,14 @@ integer :: dbrev = 2 ! Degree for twist
 integer :: dbar = 1 ! Degree for strain projection basis
 integer :: Ng = 3 ! Number of Gauss points per element
 
-real(kind=8), dimension(3) :: xg, wg
+type(Cable) :: cable1
 
-call GaussQuadrature(Ng, xg, wg)
+call cable_setup(cable1, N, d, dbrev, dbar, Ng)
 
-print*,xg
-print*,wg
+print*,'Cable created.'
 
-print*,'Hello world Template 2'
+call cable_destroy(cable1)
+
+print*,'Cable destroyed.'
     
 end program main
