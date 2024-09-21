@@ -8,6 +8,29 @@ contains
 
 !-------------------------------------------------------------    
     
+subroutine getKnotVector(N, k, knots)
+
+! Get knot vector for clamped B-Splines
+! INPUTS
+! N = number basis functions
+! k = order (degree+1)
+! knots = knot vector
+integer, intent(in) :: N
+integer, intent(in) :: k
+real(kind=8), dimension(:), intent(out) :: knots
+
+integer :: i
+
+knots(1:k-1) = 0.d0
+do i = k,N+1
+    knots(i) = (real(i,8)-k)/(N-k+1)
+enddo
+knots(N+2:N+k) = 1.d0
+
+end subroutine getKnotVector
+    
+!-------------------------------------------------------------   
+    
 subroutine spcol(knots, k, colpts, nderiv, colmat)
 
 ! Computes values and derivatives of B-Spline basis functions
