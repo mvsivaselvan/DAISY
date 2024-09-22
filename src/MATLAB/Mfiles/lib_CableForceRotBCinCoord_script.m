@@ -110,12 +110,13 @@ ARGS{4}{15} = coder.typeof(0,[3 1]);
 
 %% Define argument types for entry-point 'SplineApproximation'.
 ARGS{5} = cell(6,1);
-ARGS{5}{1} = coder.typeof(0,[Inf  3],[1 0]);
-ARGS{5}{2} = coder.typeof(0,[Inf  1],[1 0]);
+ARGS{5}{1} = coder.typeof(0,[3 inf]);
+ARGS{5}{2} = coder.typeof(0,[1 inf]);
 ARGS{5}{3} = coder.typeof(0);
-ARGS{5}{4} = coder.typeof(0,[Inf  1],[1 0]);
-ARGS{5}{5} = coder.typeof(0,[Inf  1],[1 0]);
-ARGS{5}{6} = coder.typeof(0,[Inf Inf],[1 1]);
+ARGS{5}{4} = coder.typeof(0,[inf  1]);
+ARGS{5}{5} = coder.typeof(0,[inf  1]);
+ARGS{5}{6} = coder.typeof(0,[inf inf]);
+
 
 %% Invoke MATLAB Coder.
 codegen -config cfg -package MATLABelements CableForceRotBCinCoord -args ARGS{1} CableMbar -args ARGS{2} getBishopFrame -args ARGS{3} RigidBodyForce -args ARGS{4} SplineApproximation -args ARGS{5}
