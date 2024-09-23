@@ -17,24 +17,27 @@ type :: Cable
     type(emxArray_1d_wrapper) :: nel
     
     type(emxArray_2d_wrapper) :: P0, R0
+    
+    type(emxArray_2d_wrapper) :: Mbar, Kbar11, Dbar11
 end type Cable
 
 contains
 
 !--------------------------------------------------------
 
-subroutine cable_setup(this, N, d, dbrev, dbar, Ng, &
-                       refGeom)
+subroutine cable_setup(this, N, d, dbrev, dbar, Ng, refGeom, &
+                       rho, EI, EA, GJ, betBEND, betAX, betTOR)
 
 use GaussQuad
 use BSpline
-use MATLABelements, only: SplineApproximation, getBishopFrame
+use MATLABelements, only: SplineApproximation, getBishopFrame, CableMbar
 
 type(Cable), intent(out) :: this
 integer, intent(in) :: N, d, dbrev, dbar, Ng
 real(kind=8), dimension(:,:), intent(in) :: refGeom ! (x,y,z) coord of reference geometry
+real(kind=8), intent(in) :: rho, EI, EA, GJ, betBEND, betAX, betTOR ! section properties
 
-integer :: Nelem
+integer :: Nbrev, Nbar, Nelem
 real(kind=8) :: Lelem
 real(kind=8), dimension(:), allocatable :: xg, wg
 real(kind=8), dimension(:), allocatable :: knots_brev, knots_bar
@@ -79,16 +82,18 @@ call emxArray_2d_create(this%colmat, Ng*Nelem*3, N)
 call spcol(this%knots%data_, d+1, this%xg%data_, 3, this%colmat%data_)
 
 ! Create collocation matrix for twist
-allocate(knots_brev(N+dbrev+1))
-call getKnotVector(N, dbrev+1, knots_brev)
-call emxArray_2d_create(this%colmat_brev, Ng*Nelem*2, N)
+allocate(knots_brev(N-d+1+2*dbrev))
+Nbrev = N - d + dbrev
+call getKnotVector(Nbrev, dbrev+1, knots_brev)
+call emxArray_2d_create(this%colmat_brev, Ng*Nelem*2, Nbrev)
 call spcol(knots_brev, dbrev+1, this%xg%data_, 2, this%colmat_brev%data_)
 deallocate(knots_brev)
 
 ! Create collocation matrix for strain projection
-allocate(knots_bar(N+dbar+1))
-call getKnotVector(N, dbar+1, knots_bar)
-call emxArray_2d_create(this%colmat_bar, Ng*Nelem, N)
+allocate(knots_bar(N-d+1+2*dbar))
+Nbar = N - d + dbar
+call getKnotVector(Nbar, dbar+1, knots_bar)
+call emxArray_2d_create(this%colmat_bar, Ng*Nelem, Nbar)
 call spcol(knots_bar, dbar+1, this%xg%data_, 1, this%colmat_bar%data_)
 deallocate(knots_bar)
 
@@ -112,6 +117,13 @@ enddo
 call emxArray_2d_create(this%R0, 3, 3*Ng*Nelem+6) ! a rotation matrix per Gauss pt + ends
 call getBishopFrame(this%P0%emx, this%knots%emx, real(d,8), this%xg%emx, this%R0%emx)
 
+! Compute strain projection related matrices
+call emxArray_2d_create(this%Mbar, Nbar, Nbar)
+call emxArray_2d_create(this%Kbar11, Nbar, Nbar)
+call emxArray_2d_create(this%Dbar11, Nbar, Nbar)
+call CableMbar(this%P0%emx, EA, betAX, this%colmat%emx, this%colmat_bar%emx, this%wg%emx, &
+               this%Mbar%emx, this%Kbar11%emx, this%Dbar11%emx)
+
 end subroutine cable_setup
     
 !--------------------------------------------------------
@@ -129,6 +141,9 @@ call emxArray_2d_destroy(this%colmat_brev)
 call emxArray_2d_destroy(this%colmat_bar)
 call emxArray_2d_destroy(this%P0)
 call emxArray_2d_destroy(this%R0)
+call emxArray_2d_destroy(this%Mbar)
+call emxArray_2d_destroy(this%Kbar11)
+call emxArray_2d_destroy(this%Dbar11)
 
 end subroutine cable_destroy
                        
