@@ -81,6 +81,12 @@ do i = 1,ncolpts
             exit
         endif
     enddo
+    if (left == nknots) then ! colpts(i) is at the end where knots are repeated
+        do while (abs(knots(left)-knots(left-1))<1e-10)
+            left = left - 1
+        enddo
+        left = left - 1
+    endif
 
     ! Compute the value and derivatives of non-zero basis functions
     call bsplvd(knots, k, colpts(i), left, awork, dbiatx, nderiv)
@@ -101,7 +107,7 @@ end subroutine spcol
 
 !-------------------------------------------------------------
 
-subroutine spcolC(knots, nknots, k, colpts, ncolpts, nderiv, colmat, ncolmat) bind(C, name="spcolC")
+subroutine mySpcol(knots, nknots, k, colpts, ncolpts, nderiv, colmat, ncolmat) bind(C, name="mySpcol")
 
 integer(c_int), intent(in), value :: nknots, ncolpts, ncolmat
 real(kind=c_double), dimension(nknots), intent(in) :: knots
@@ -119,7 +125,7 @@ call c_f_pointer(c_loc(colmat),colmat_,[ncolpts*nderiv,nbasis])
 
 call spcol(knots, k, colpts, nderiv, colmat_)
 
-end subroutine spcolC
+end subroutine mySpcol
 
 !-------------------------------------------------------------
 

@@ -61,13 +61,6 @@ struct emxArray_uint32_T {
 typedef struct emxArray_uint32_T emxArray_uint32_T;
 #endif /* typedef_emxArray_uint32_T */
 
-#ifndef typedef_d_captured_var
-#define typedef_d_captured_var
-typedef struct {
-  emxArray_real_T *contents;
-} d_captured_var;
-#endif /* typedef_d_captured_var */
-
 #ifndef struct_emxArray_int8_T
 #define struct_emxArray_int8_T
 struct emxArray_int8_T {

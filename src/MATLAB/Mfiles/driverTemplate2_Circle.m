@@ -24,7 +24,7 @@ refGeom = curve_gamm(linspace(0,1,101));
 [gamm_, J_] = piecewiseLinearCurve(refGeom',[0;sg;1]);
 [P0, ~] = SplineApproximation(gamm_, J_, N, sg, wg, colmat);
 P0 = P0 - P0(:,1); % translate start end to origin
-R0 = getBishopFrame(P0, knots, d, [0; sg; 1]);
+R0 = getBishopFrame(P0, knots, d, sg);
 
 if (~coder.target('MATLAB')) % generating code, so spcol not called in
                              % getBishopFrame, and loading R0 from a

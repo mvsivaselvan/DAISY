@@ -14,27 +14,29 @@
 #include "CableForceRotBCinCoord_data.h"
 #include "CableForceRotBCinCoord_emxutil.h"
 #include "CableForceRotBCinCoord_initialize.h"
-#include "CableForceRotBCinCoord_internal_types.h"
 #include "CableForceRotBCinCoord_types.h"
 #include "spcolC.h"
 #include <math.h>
 #include <string.h>
 
 /* Function Declarations */
-static void Bishop(const d_captured_var *knots, const b_captured_var *d,
-                   const d_captured_var *P, const c_captured_var *I3,
-                   const double q[4], double qdot[4]);
+static void getBishopFrame_anonFcn1(const emxArray_real_T *P,
+                                    const emxArray_real_T *knots, double d,
+                                    double x, const double q[4],
+                                    double varargout_1[4]);
 
 /* Function Definitions */
-static void Bishop(const d_captured_var *knots, const b_captured_var *d,
-                   const d_captured_var *P, const c_captured_var *I3,
-                   const double q[4], double qdot[4])
+static void getBishopFrame_anonFcn1(const emxArray_real_T *P,
+                                    const emxArray_real_T *knots, double d,
+                                    double x, const double q[4],
+                                    double varargout_1[4])
 {
   emxArray_real_T *colmat;
   double dv[16];
-  double b_I3[9];
+  double c_I[9];
   double taup[3];
   double xip[3];
+  const double *P_data;
   double nxip;
   double xipp_idx_0;
   double xipp_idx_1;
@@ -44,53 +46,56 @@ static void Bishop(const d_captured_var *knots, const b_captured_var *d,
   int inner;
   int k;
   int xip_tmp;
+  signed char b_I[9];
+  P_data = P->data;
   /*  generating code */
   emxInit_real_T(&colmat, 2);
-  spcolC(knots->contents, d->contents + 1.0, colmat);
+  spcolC(knots, d + 1.0, x, colmat);
   colmat_data = colmat->data;
   /*  B = colmat(1,:)'; % not used */
-  inner = P->contents->size[1];
+  inner = P->size[1];
   xip[0] = 0.0;
   xip[1] = 0.0;
   xip[2] = 0.0;
   for (k = 0; k < inner; k++) {
     aoffset = k * 3;
     xip_tmp = 3 * k + 1;
-    xip[0] += P->contents->data[aoffset] * colmat_data[xip_tmp];
-    xip[1] += P->contents->data[aoffset + 1] * colmat_data[xip_tmp];
-    xip[2] += P->contents->data[aoffset + 2] * colmat_data[xip_tmp];
+    xip[0] += P_data[aoffset] * colmat_data[xip_tmp];
+    xip[1] += P_data[aoffset + 1] * colmat_data[xip_tmp];
+    xip[2] += P_data[aoffset + 2] * colmat_data[xip_tmp];
   }
-  inner = P->contents->size[1];
+  inner = P->size[1];
   xipp_idx_0 = 0.0;
   xipp_idx_1 = 0.0;
   xipp_idx_2 = 0.0;
   for (k = 0; k < inner; k++) {
     aoffset = k * 3;
     xip_tmp = 3 * k + 2;
-    xipp_idx_0 += P->contents->data[aoffset] * colmat_data[xip_tmp];
-    xipp_idx_1 += P->contents->data[aoffset + 1] * colmat_data[xip_tmp];
-    xipp_idx_2 += P->contents->data[aoffset + 2] * colmat_data[xip_tmp];
+    xipp_idx_0 += P_data[aoffset] * colmat_data[xip_tmp];
+    xipp_idx_1 += P_data[aoffset + 1] * colmat_data[xip_tmp];
+    xipp_idx_2 += P_data[aoffset + 2] * colmat_data[xip_tmp];
   }
   emxFree_real_T(&colmat);
   nxip = sqrt((xip[0] * xip[0] + xip[1] * xip[1]) + xip[2] * xip[2]);
-  /*  if (nxip == 0) % This situation will never heppen, it is to avoid */
-  /*                 % nan and inf checks in code generation */
-  /*      qdot = [0; 0; 0; 0]; */
-  /*      return */
-  /*  end */
   xip[0] /= nxip;
   xip[1] /= nxip;
   xip[2] /= nxip;
+  for (inner = 0; inner < 9; inner++) {
+    b_I[inner] = 0;
+  }
+  b_I[0] = 1;
+  b_I[4] = 1;
+  b_I[8] = 1;
   for (inner = 0; inner < 3; inner++) {
-    b_I3[3 * inner] = I3->contents[3 * inner] - xip[0] * xip[inner];
+    c_I[3 * inner] = (double)b_I[3 * inner] - xip[0] * xip[inner];
     xip_tmp = 3 * inner + 1;
-    b_I3[xip_tmp] = I3->contents[xip_tmp] - xip[1] * xip[inner];
+    c_I[xip_tmp] = (double)b_I[xip_tmp] - xip[1] * xip[inner];
     xip_tmp = 3 * inner + 2;
-    b_I3[xip_tmp] = I3->contents[xip_tmp] - xip[2] * xip[inner];
+    c_I[xip_tmp] = (double)b_I[xip_tmp] - xip[2] * xip[inner];
   }
   for (inner = 0; inner < 3; inner++) {
-    taup[inner] = ((b_I3[inner] * xipp_idx_0 + b_I3[inner + 3] * xipp_idx_1) +
-                   b_I3[inner + 6] * xipp_idx_2) /
+    taup[inner] = ((c_I[inner] * xipp_idx_0 + c_I[inner + 3] * xipp_idx_1) +
+                   c_I[inner + 6] * xipp_idx_2) /
                   nxip;
   }
   double b_d;
@@ -122,7 +127,7 @@ static void Bishop(const d_captured_var *knots, const b_captured_var *d,
   dv[11] = 0.5 * xipp_idx_0;
   dv[15] = 0.0;
   for (inner = 0; inner < 4; inner++) {
-    qdot[inner] =
+    varargout_1[inner] =
         (((dv[inner] * q[0] + dv[inner + 4] * q[1]) + dv[inner + 8] * q[2]) +
          dv[inner + 12] * q[3]) +
         nxip * q[inner];
@@ -181,21 +186,17 @@ void getBishopFrame(const emxArray_real_T *P, const emxArray_real_T *knots,
                                 3.7610554245283021,
                                 -1.9642857142857142,
                                 2.5};
-  static const signed char b_iv[9] = {1, 0, 0, 0, 1, 0, 0, 0, 0};
-  b_captured_var b_d;
-  c_captured_var I3;
-  d_captured_var b_P;
-  d_captured_var b_knots;
+  static const double dv[6] = {0.2, 0.3, 0.8, 0.88888888888888884, 1.0, 1.0};
   emxArray_real_T *Q;
+  emxArray_real_T *tspan;
   emxArray_real_T *yout;
   double f[28];
   double f0[4];
   double q0[4];
   const double *P_data;
-  const double *knots_data;
   const double *xg_data;
   double absh;
-  double c_d;
+  double b_d;
   double d1;
   double d2;
   double d3;
@@ -210,6 +211,7 @@ void getBishopFrame(const emxArray_real_T *P, const emxArray_real_T *knots,
   double tfinal_tmp;
   double tnew;
   double *Q_data;
+  double *R_data;
   double *yout_data;
   int Bcolidx;
   int exponent;
@@ -228,27 +230,7 @@ void getBishopFrame(const emxArray_real_T *P, const emxArray_real_T *knots,
     CableForceRotBCinCoord_initialize();
   }
   xg_data = xg->data;
-  knots_data = knots->data;
   P_data = P->data;
-  emxInitStruct_captured_var(&b_P);
-  i = b_P.contents->size[0] * b_P.contents->size[1];
-  b_P.contents->size[0] = 3;
-  b_P.contents->size[1] = P->size[1];
-  emxEnsureCapacity_real_T(b_P.contents, i);
-  nnxt = 3 * P->size[1];
-  for (i = 0; i < nnxt; i++) {
-    b_P.contents->data[i] = P_data[i];
-  }
-  emxInitStruct_captured_var(&b_knots);
-  i = b_knots.contents->size[0] * b_knots.contents->size[1];
-  b_knots.contents->size[0] = 1;
-  b_knots.contents->size[1] = knots->size[1];
-  emxEnsureCapacity_real_T(b_knots.contents, i);
-  nnxt = knots->size[1];
-  for (i = 0; i < nnxt; i++) {
-    b_knots.contents->data[i] = knots_data[i];
-  }
-  b_d.contents = d;
   /*  Computes the (twist-free) Bishop framing of a given curve */
   /*  INPUTS */
   /*  P = control points of curve arranged as 3XN matrix */
@@ -261,18 +243,18 @@ void getBishopFrame(const emxArray_real_T *P, const emxArray_real_T *knots,
   /*  OUTPUT */
   /*  R = cell array with length(xg) rotation matrices defining the Bishop */
   /*      frame */
-  c_d = P_data[3] - P_data[0];
-  tau0_idx_0 = c_d;
-  normtau0 = c_d * c_d;
-  c_d = P_data[4] - P_data[1];
-  tau0_idx_1 = c_d;
-  normtau0 += c_d * c_d;
-  c_d = P_data[5] - P_data[2];
-  normtau0 += c_d * c_d;
+  b_d = P_data[3] - P_data[0];
+  tau0_idx_0 = b_d;
+  normtau0 = b_d * b_d;
+  b_d = P_data[4] - P_data[1];
+  tau0_idx_1 = b_d;
+  normtau0 += b_d * b_d;
+  b_d = P_data[5] - P_data[2];
+  normtau0 += b_d * b_d;
   normtau0 = sqrt(normtau0);
   tau0_idx_0 /= normtau0;
   tau0_idx_1 /= normtau0;
-  tau0_idx_2 = c_d / normtau0;
+  tau0_idx_2 = b_d / normtau0;
   normtau0 = acos(tau0_idx_0);
   /*  tau0(1) = dot product of tau0 with [1;0;0] */
   if (fabs(normtau0) < 1.0E-15) {
@@ -290,18 +272,26 @@ void getBishopFrame(const emxArray_real_T *P, const emxArray_real_T *knots,
     q0[2] = hmax * (-tau0_idx_2 / tau0_idx_0);
     q0[3] = hmax * (tau0_idx_1 / tau0_idx_0);
   }
-  for (i = 0; i < 9; i++) {
-    I3.contents[i] = b_iv[i];
+  emxInit_real_T(&tspan, 1);
+  i = tspan->size[0];
+  tspan->size[0] = xg->size[0] + 2;
+  emxEnsureCapacity_real_T(tspan, i);
+  R_data = tspan->data;
+  R_data[0] = 0.0;
+  nnxt = xg->size[0];
+  for (i = 0; i < nnxt; i++) {
+    R_data[i + 1] = xg_data[i];
   }
-  tfinal_tmp = xg_data[xg->size[0] - 1];
-  Bishop(&b_knots, &b_d, &b_P, &I3, q0, f0);
+  R_data[xg->size[0] + 1] = 1.0;
+  tfinal_tmp = R_data[tspan->size[0] - 1];
+  getBishopFrame_anonFcn1(P, knots, d, R_data[0], q0, f0);
   emxInit_real_T(&yout, 2);
   i = yout->size[0] * yout->size[1];
   yout->size[0] = 4;
-  yout->size[1] = xg->size[0];
+  yout->size[1] = tspan->size[0];
   emxEnsureCapacity_real_T(yout, i);
   yout_data = yout->data;
-  nnxt = xg->size[0] << 2;
+  nnxt = tspan->size[0] << 2;
   for (i = 0; i < nnxt; i++) {
     yout_data[i] = 0.0;
   }
@@ -310,9 +300,9 @@ void getBishopFrame(const emxArray_real_T *P, const emxArray_real_T *knots,
   yout_data[1] = q0[1];
   yout_data[2] = q0[2];
   yout_data[3] = q0[3];
-  tau0_idx_1 = tfinal_tmp - xg_data[0];
+  tau0_idx_1 = tfinal_tmp - R_data[0];
   normtau0 = fabs(tau0_idx_1);
-  tau0_idx_0 = fabs(xg_data[0]);
+  tau0_idx_0 = fabs(R_data[0]);
   hmax = fmin(normtau0,
               fmax(0.1 * normtau0, 3.5527136788005009E-15 *
                                        fmax(tau0_idx_0, fabs(tfinal_tmp))));
@@ -322,7 +312,7 @@ void getBishopFrame(const emxArray_real_T *P, const emxArray_real_T *knots,
     frexp(tau0_idx_0, &Bcolidx);
     tau0_idx_2 = ldexp(1.0, Bcolidx - 53);
   }
-  absh = fmin(hmax, fabs(xg_data[1] - xg_data[0]));
+  absh = fmin(hmax, fabs(R_data[1] - R_data[0]));
   normtau0 = 0.0;
   tau0_idx_0 = fabs(f0[0] / fmax(fabs(q0[0]), 0.004));
   if (tau0_idx_0 > 0.0) {
@@ -345,7 +335,7 @@ void getBishopFrame(const emxArray_real_T *P, const emxArray_real_T *knots,
     absh = 1.0 / normtau0;
   }
   absh = fmax(absh, 16.0 * tau0_idx_2);
-  t = xg_data[0];
+  t = R_data[0];
   memset(&f[0], 0, 28U * sizeof(double));
   f[0] = f0[0];
   f[1] = f0[1];
@@ -374,10 +364,10 @@ void getBishopFrame(const emxArray_real_T *P, const emxArray_real_T *knots,
     hmin = 16.0 * tau0_idx_2;
     absh = fmin(hmax, fmax(hmin, absh));
     h = (double)tdir * absh;
-    c_d = tfinal_tmp - t;
-    d1 = fabs(c_d);
+    b_d = tfinal_tmp - t;
+    d1 = fabs(b_d);
     if (1.1 * absh >= d1) {
-      h = c_d;
+      h = b_d;
       absh = d1;
       Done = true;
     }
@@ -403,8 +393,8 @@ void getBishopFrame(const emxArray_real_T *P, const emxArray_real_T *knots,
             }
           }
         }
-        Bishop(&b_knots, &b_d, &b_P, &I3, f0,
-               *(double(*)[4]) & f[(j + 1) << 2]);
+        getBishopFrame_anonFcn1(P, knots, d, t + h * dv[j], f0,
+                                *(double(*)[4]) & f[(j + 1) << 2]);
       }
       tnew = t + h;
       ynew[0] = q0[0];
@@ -421,13 +411,13 @@ void getBishopFrame(const emxArray_real_T *P, const emxArray_real_T *knots,
           }
         }
       }
-      Bishop(&b_knots, &b_d, &b_P, &I3, ynew, *(double(*)[4]) & f[24]);
+      getBishopFrame_anonFcn1(P, knots, d, tnew, ynew, *(double(*)[4]) & f[24]);
       for (i = 0; i < 4; i++) {
-        c_d = 0.0;
+        b_d = 0.0;
         for (i1 = 0; i1 < 7; i1++) {
-          c_d += f[i + (i1 << 2)] * b[i1];
+          b_d += f[i + (i1 << 2)] * b[i1];
         }
-        f0[i] = c_d;
+        f0[i] = b_d;
       }
       if (Done) {
         tnew = tfinal_tmp;
@@ -526,50 +516,50 @@ void getBishopFrame(const emxArray_real_T *P, const emxArray_real_T *knots,
       exitg1 = 1;
     } else {
       nnxt = next;
-      while ((nnxt + 2 <= xg->size[0]) &&
-             ((double)tdir * (tnew - xg_data[nnxt + 1]) >= 0.0)) {
+      while ((nnxt + 2 <= tspan->size[0]) &&
+             ((double)tdir * (tnew - R_data[nnxt + 1]) >= 0.0)) {
         nnxt++;
       }
       Bcolidx = nnxt - next;
       if (Bcolidx > 0) {
         for (j = next + 2; j <= nnxt; j++) {
-          normtau0 = (xg_data[j - 1] - t) / h;
+          normtau0 = (R_data[j - 1] - t) / h;
           for (iac = 0; iac < 4; iac++) {
-            c_d = 0.0;
+            b_d = 0.0;
             d1 = 0.0;
             d2 = 0.0;
             for (i = 0; i < 7; i++) {
               d3 = f[iac + (i << 2)];
-              c_d += d3 * (h * b_b[i]);
+              b_d += d3 * (h * b_b[i]);
               d1 += d3 * (h * c_b[i]);
               d2 += d3 * (h * d_b[i]);
             }
             yout_data[iac + 4 * (j - 1)] =
-                (((d2 * normtau0 + d1) * normtau0 + c_d) * normtau0 +
+                (((d2 * normtau0 + d1) * normtau0 + b_d) * normtau0 +
                  f[iac] * h) *
                     normtau0 +
                 q0[iac];
           }
         }
-        if (xg_data[nnxt] == tnew) {
+        if (R_data[nnxt] == tnew) {
           yout_data[4 * nnxt] = ynew[0];
           yout_data[4 * nnxt + 1] = ynew[1];
           yout_data[4 * nnxt + 2] = ynew[2];
           yout_data[4 * nnxt + 3] = ynew[3];
         } else {
-          normtau0 = (xg_data[nnxt] - t) / h;
+          normtau0 = (R_data[nnxt] - t) / h;
           for (j = 0; j < 4; j++) {
-            c_d = 0.0;
+            b_d = 0.0;
             d1 = 0.0;
             d2 = 0.0;
             for (i = 0; i < 7; i++) {
               d3 = f[j + (i << 2)];
-              c_d += d3 * (h * b_b[i]);
+              b_d += d3 * (h * b_b[i]);
               d1 += d3 * (h * c_b[i]);
               d2 += d3 * (h * d_b[i]);
             }
             yout_data[j + 4 * nnxt] =
-                (((d2 * normtau0 + d1) * normtau0 + c_d) * normtau0 +
+                (((d2 * normtau0 + d1) * normtau0 + b_d) * normtau0 +
                  f[j] * h) *
                     normtau0 +
                 q0[j];
@@ -601,8 +591,7 @@ void getBishopFrame(const emxArray_real_T *P, const emxArray_real_T *knots,
       }
     }
   } while (exitg1 == 0);
-  emxFreeStruct_captured_var(&b_knots);
-  emxFreeStruct_captured_var(&b_P);
+  emxFree_real_T(&tspan);
   emxInit_real_T(&Q, 2);
   i = Q->size[0] * Q->size[1];
   Q->size[0] = nout;
@@ -615,51 +604,53 @@ void getBishopFrame(const emxArray_real_T *P, const emxArray_real_T *knots,
     }
   }
   emxFree_real_T(&yout);
+  /*  + 2 for the two end points 0 and 1 */
   i = R->size[0] * R->size[1];
   R->size[0] = 3;
-  R->size[1] = 3 * xg->size[0];
+  i1 = (int)(3.0 * ((double)xg->size[0] + 2.0));
+  R->size[1] = i1;
   emxEnsureCapacity_real_T(R, i);
-  yout_data = R->data;
-  nnxt = 3 * (3 * xg->size[0]);
+  R_data = R->data;
+  nnxt = 3 * i1;
   for (i = 0; i < nnxt; i++) {
-    yout_data[i] = 0.0;
+    R_data[i] = 0.0;
   }
-  i = xg->size[0];
-  for (tdir = 0; tdir < i; tdir++) {
-    c_d = Q_data[tdir];
-    hmin = c_d * c_d;
-    c_d = Q_data[tdir + Q->size[0]];
-    h = c_d * c_d;
+  i = xg->size[0] + 1;
+  for (tdir = 0; tdir <= i; tdir++) {
+    b_d = Q_data[tdir];
+    hmin = b_d * b_d;
+    b_d = Q_data[tdir + Q->size[0]];
+    h = b_d * b_d;
     normtau0 = hmin + h;
-    c_d = Q_data[tdir + Q->size[0] * 2];
-    tnew = c_d * c_d;
-    c_d = Q_data[tdir + Q->size[0] * 3];
-    t = c_d * c_d;
+    b_d = Q_data[tdir + Q->size[0] * 2];
+    tnew = b_d * b_d;
+    b_d = Q_data[tdir + Q->size[0] * 3];
+    t = b_d * b_d;
     hmax = sqrt((normtau0 + tnew) + t);
     hmax = 1.0 / (hmax * hmax);
-    c_d = 3.0 * (((double)tdir + 1.0) - 1.0) + 1.0;
+    b_d = 3.0 * (((double)tdir + 1.0) - 1.0) + 1.0;
     d1 = Q_data[tdir];
     d2 = Q_data[tdir + Q->size[0]];
     d3 = Q_data[tdir + Q->size[0] * 2];
     absh = Q_data[tdir + Q->size[0] * 3];
-    i1 = 3 * ((int)c_d - 1);
-    yout_data[i1] = hmax * ((normtau0 - tnew) - t);
+    i1 = 3 * ((int)b_d - 1);
+    R_data[i1] = hmax * ((normtau0 - tnew) - t);
     normtau0 = d2 * d3;
     tau0_idx_0 = d1 * absh;
-    nnxt = 3 * ((int)(c_d + 1.0) - 1);
-    yout_data[nnxt] = hmax * (2.0 * (normtau0 - tau0_idx_0));
+    nnxt = 3 * ((int)(b_d + 1.0) - 1);
+    R_data[nnxt] = hmax * (2.0 * (normtau0 - tau0_idx_0));
     tau0_idx_2 = d2 * absh;
     tau0_idx_1 = d1 * d3;
-    Bcolidx = 3 * ((int)(c_d + 2.0) - 1);
-    yout_data[Bcolidx] = hmax * (2.0 * (tau0_idx_2 + tau0_idx_1));
-    yout_data[i1 + 1] = hmax * (2.0 * (normtau0 + tau0_idx_0));
-    yout_data[nnxt + 1] = hmax * (((hmin + tnew) - h) - t);
+    Bcolidx = 3 * ((int)(b_d + 2.0) - 1);
+    R_data[Bcolidx] = hmax * (2.0 * (tau0_idx_2 + tau0_idx_1));
+    R_data[i1 + 1] = hmax * (2.0 * (normtau0 + tau0_idx_0));
+    R_data[nnxt + 1] = hmax * (((hmin + tnew) - h) - t);
     normtau0 = d3 * absh;
     tau0_idx_0 = d1 * d2;
-    yout_data[Bcolidx + 1] = hmax * (2.0 * (normtau0 - tau0_idx_0));
-    yout_data[i1 + 2] = hmax * (2.0 * (tau0_idx_2 - tau0_idx_1));
-    yout_data[nnxt + 2] = hmax * (2.0 * (normtau0 + tau0_idx_0));
-    yout_data[Bcolidx + 2] = hmax * (((hmin + t) - h) - tnew);
+    R_data[Bcolidx + 1] = hmax * (2.0 * (normtau0 - tau0_idx_0));
+    R_data[i1 + 2] = hmax * (2.0 * (tau0_idx_2 - tau0_idx_1));
+    R_data[nnxt + 2] = hmax * (2.0 * (normtau0 + tau0_idx_0));
+    R_data[Bcolidx + 2] = hmax * (((hmin + t) - h) - tnew);
   }
   emxFree_real_T(&Q);
 }

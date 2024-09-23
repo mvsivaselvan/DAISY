@@ -28,9 +28,9 @@ call cable_setup(cable1, N, d, dbrev, dbar, Ng, refGeom)
 print*,'Cable created.'
 
 ! Write P0 to file
-open(file='P0.dat', unit=100, status='unknown')
-do i = 1,N
-    write(100,*)cable1%P0%data_(:,i)
+open(file='R0.dat', unit=100, status='unknown')
+do i = 1,3*(Ng*(N-d)+2)
+    write(100,*)cable1%R0%data_(:,i)
 enddo
 close(unit=100)
 

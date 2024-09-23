@@ -16,7 +16,7 @@ type :: Cable
     ! nel(n) = index of element to which quadrature pt xg(n) belongs to
     type(emxArray_1d_wrapper) :: nel
     
-    type(emxArray_2d_wrapper) :: P0
+    type(emxArray_2d_wrapper) :: P0, R0
 end type Cable
 
 contains
@@ -28,7 +28,7 @@ subroutine cable_setup(this, N, d, dbrev, dbar, Ng, &
 
 use GaussQuad
 use BSpline
-use MATLABelements, only: SplineApproximation
+use MATLABelements, only: SplineApproximation, getBishopFrame
 
 type(Cable), intent(out) :: this
 integer, intent(in) :: N, d, dbrev, dbar, Ng
@@ -40,6 +40,7 @@ real(kind=8), dimension(:), allocatable :: xg, wg
 real(kind=8), dimension(:), allocatable :: knots_brev, knots_bar
 type(emxArray_2d_wrapper) :: gamm_
 type(emxArray_1d_wrapper) :: J_
+real(kind=8), dimension(3) :: P0col1
 integer :: i
 real(kind=8) :: err
 
@@ -101,6 +102,16 @@ call SplineApproximation(gamm_%emx, J_%emx, real(N,8), this%xg%emx, this%wg%emx,
 call emxArray_2d_destroy(gamm_)
 call emxArray_1d_destroy(J_)
 
+! Move start point of curve to origin
+P0col1 = this%P0%data_(:,1)
+do i = 1, N
+    this%P0%data_(:,i) = this%P0%data_(:,i) - P0col1
+enddo
+
+! Construct Bishop frame
+call emxArray_2d_create(this%R0, 3, 3*Ng*Nelem+6) ! a rotation matrix per Gauss pt + ends
+call getBishopFrame(this%P0%emx, this%knots%emx, real(d,8), this%xg%emx, this%R0%emx)
+
 end subroutine cable_setup
     
 !--------------------------------------------------------
@@ -117,6 +128,7 @@ call emxArray_2d_destroy(this%colmat)
 call emxArray_2d_destroy(this%colmat_brev)
 call emxArray_2d_destroy(this%colmat_bar)
 call emxArray_2d_destroy(this%P0)
+call emxArray_2d_destroy(this%R0)
 
 end subroutine cable_destroy
                        

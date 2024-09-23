@@ -1,7 +1,7 @@
 #include<stdio.h>
 #include<stdlib.h>
 
-extern void spcolC(double* knots, int nknots, int k, double* colpts, int ncolpts, int nderiv, double* colmat, int ncolmat);
+extern void mySspcol(double* knots, int nknots, int k, double* colpts, int ncolpts, int nderiv, double* colmat, int ncolmat);
 
 void main()
 {
@@ -16,7 +16,7 @@ void main()
 	int nbasis = nt - k;
 	double* colmat = calloc(nxg*nderiv*nbasis,sizeof(double));
 
-	spcolC(t, nt, k, xg, nxg, nderiv, colmat, nxg*nderiv*nbasis);
+	mySpcol(t, nt, k, xg, nxg, nderiv, colmat, nxg*nderiv*nbasis);
 
 	printf("%f\n", colmat[2]);
 

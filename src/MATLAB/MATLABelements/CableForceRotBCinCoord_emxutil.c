@@ -166,11 +166,6 @@ void emxEnsureCapacity_uint32_T(emxArray_uint32_T *emxArray, int oldNumel)
   }
 }
 
-void emxFreeStruct_captured_var(d_captured_var *pStruct)
-{
-  emxFree_real_T(&pStruct->contents);
-}
-
 void emxFree_int32_T(emxArray_int32_T **pEmxArray)
 {
   if (*pEmxArray != (emxArray_int32_T *)NULL) {
@@ -219,11 +214,6 @@ void emxFree_uint32_T(emxArray_uint32_T **pEmxArray)
     free(*pEmxArray);
     *pEmxArray = (emxArray_uint32_T *)NULL;
   }
-}
-
-void emxInitStruct_captured_var(d_captured_var *pStruct)
-{
-  emxInit_real_T(&pStruct->contents, 2);
 }
 
 void emxInit_int32_T(emxArray_int32_T **pEmxArray, int numDimensions)

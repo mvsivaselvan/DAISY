@@ -2,10 +2,12 @@
 #include<stdlib.h>
 
 #include "SplineApproximation.h"
+#include "getBishopFrame.h"
+#include "spcolC.h"
 
 void main()
 {
-	emxArray_real_T gamm_, J_, xg, wg, colmat, P0;
+	emxArray_real_T gamm_, J_, xg, wg, colmat, knots, P0, R0;
 
 	double gamm_data[] = { -60.6380, 0, -105.0282, -58.8579, 0, -106.0342, -52.6194, 0, -109.2652,  -46.2036, 0, -112.1283,
                            -42.3973, 0, -113.6231, -35.7463, 0, -115.8866, -28.9759, 0, -117.7634,  -24.9891, 0, -118.6726,
@@ -52,6 +54,15 @@ void main()
 	wg.numDimensions = 1;
 	wg.canFreeData = false;
 
+	double knotsdata[] = { 0.0, 0.0, 0.0, 0.0, 0.1429, 0.2857, 0.4286,
+		                   0.5714, 0.7143, 0.8571, 1.0, 1.0, 1.0, 1.0 };
+	int knotssize[] = { 14 };
+	knots.data = knotsdata;
+	knots.size = knotssize;
+	knots.allocatedSize = 14;
+	knots.numDimensions = 1;
+	knots.canFreeData = false;
+
 	double colmatdata[] = { 0.698568501158667,-16.5332650270356,260.865710378498,0.125,-5.25,147,0.00143149884133248,-0.266734972964425,33.1342896215019,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 0.283452624903444,14.3665812837945,-383.014993162372,0.59375,-1.3125,-183.75,0.341547375096556,-5.96658128379447,15.5149931623716,0.174642125289667,-4.13331625675889,65.2164275946245,0.03125,-1.3125,36.75,0.000357874710333122,-0.0666837432411064,8.2835724053755,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 0.017740290797666,2.1222279144137,116.62690118029,0.260416666666667,5.6875,12.25,0.540593042535667,3.4777720855863,-92.1269011802899,0.596466708944852,-0.0666837432411063,-103.171664387457,0.46875,-3.9375,-36.75,0.228533291055148,-4.1333162567589,29.6716643874572,0.116428083526445,-2.7555441711726,43.4776183964164,0.0208333333333334,-0.875000000000001,24.5,0.000238583140222079,-0.044455828827404,5.52238160358365,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
@@ -69,22 +80,52 @@ void main()
 	colmat.numDimensions = 2;
 	colmat.canFreeData = false;
 
+	/***********************************
+	    Test SplineApproximation
+	************************************/
 	P0.data = calloc(30, sizeof(double));
 	int P0size[] = { 3,10 };
 	P0.size = P0size;
 	P0.allocatedSize = 30;
 	P0.numDimensions = 2;
 	P0.canFreeData = false;
-
 	double err;
 
 	SplineApproximation(&gamm_, &J_, 10, &xg, &wg, &colmat, &P0, &err);
-
+	printf("P0 = ...\n");
 	for (int i = 0; i < 10; i++)
 		printf("%f\t%f\t%f\n", P0.data[i * 3], P0.data[i * 3+1], P0.data[i * 3+2]);
 	printf("error = %f\n", err);
 
+	/***********************************
+		Test getBishopFrame
+	************************************/
+	R0.data = calloc(207, sizeof(double));
+	int R0size[] = { 3,69 };
+	R0.size = R0size;
+	R0.allocatedSize = 207;
+	R0.numDimensions = 2;
+	R0.canFreeData = false;
+
+	/*emxArray_real_T colmat__;
+	double *colmat__data = calloc(30,sizeof(double));
+	colmat__.data = colmat__data;
+	int colmat__size[] = { 3, 10 };
+	colmat__.size = colmat__size;
+	colmat__.allocatedSize = 30;
+	colmat__.numDimensions = 2;
+	colmat__.canFreeData = false;
+
+	spcolC(&knots, 4.0, 0, &colmat__);*/
+
+	getBishopFrame(&P0, &knots, 3.0, &xg, &R0);
+	printf("R0 = ...\n");
+	for (int i = 0; i < 69; i++)
+		printf("%f\t%f\t%f\n", R0.data[i * 3], R0.data[i * 3 + 1], R0.data[i * 3 + 2]);
+
 	free(P0.data);
+	free(R0.data);
+	// free(colmat__data);
 
 	printf("Hello MATLAB elements test\n");
 }

@@ -23,7 +23,8 @@ extern "C" {
 #endif
 
 /* Function Declarations */
-void spcolC(const emxArray_real_T *knots, double k, emxArray_real_T *colmat);
+void spcolC(const emxArray_real_T *knots, double k, double colpt,
+            emxArray_real_T *colmat);
 
 #ifdef __cplusplus
 }

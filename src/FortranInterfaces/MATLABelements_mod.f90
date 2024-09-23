@@ -48,14 +48,13 @@ end interface
 !-------------------------------------------------------------
 
 interface
-    subroutine getBishopFrame (P, knots, d, xg, q0, R) &
+    subroutine getBishopFrame (P, knots, d, xg, R) &
             bind(C, name="getBishopFrame")
         use, intrinsic :: iso_c_binding
         use emxArray
         implicit none
         type(emxArray_real_T), intent(in) :: P, knots, xg
         real(kind=c_double), value, intent(in) :: d
-        real(kind=c_double), dimension(4), intent(in) :: q0
         type(emxArray_real_T), intent(out) :: R
     end subroutine getBishopFrame
 end interface

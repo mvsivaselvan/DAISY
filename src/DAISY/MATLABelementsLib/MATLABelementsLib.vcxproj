@@ -41,6 +41,7 @@
     <ClCompile Include="..\..\MATLAB\MATLABelements\qrsolve.c" />
     <ClCompile Include="..\..\MATLAB\MATLABelements\RigidBodyForce.c" />
     <ClCompile Include="..\..\MATLAB\MATLABelements\rothelper.c" />
+    <ClCompile Include="..\..\MATLAB\MATLABelements\spcolC\spcolC.c" />
     <ClCompile Include="..\..\MATLAB\MATLABelements\SplineApproximation.c" />
     <ClCompile Include="..\..\MATLAB\MATLABelements\xgeqp3.c" />
     <ClCompile Include="..\..\MATLAB\MATLABelements\xgetrf.c" />
@@ -72,6 +73,7 @@
     <ClInclude Include="..\..\MATLAB\MATLABelements\RigidBodyForce.h" />
     <ClInclude Include="..\..\MATLAB\MATLABelements\rothelper.h" />
     <ClInclude Include="..\..\MATLAB\MATLABelements\rtwtypes.h" />
+    <ClInclude Include="..\..\MATLAB\MATLABelements\spcolC.h" />
     <ClInclude Include="..\..\MATLAB\MATLABelements\SplineApproximation.h" />
     <ClInclude Include="..\..\MATLAB\MATLABelements\tmwtypes.h" />
     <ClInclude Include="..\..\MATLAB\MATLABelements\xgeqp3.h" />
