@@ -5,7 +5,28 @@ use emxArray
 implicit none
 
 type :: Cable
-    integer :: N ! Number of control points
+    !--------------------------------------------------------------
+    ! GEOMETRY
+    !--------------------------------------------------------------
+    ! x01 = reference position of joint 1; (3x1) vector
+    ! RJ1 = rotation of joint 1 coordinate frame with respect to global
+    ! RE1 = rotation of cable end 1 with respect to joint 1 coordinate frame
+    ! r1 = position of cable end 1 relative to joint 1 in joint 1 coordinate 
+    !       system (end offset, 3x1 vector)
+    ! x02, RJ2, RE2, r2 - same at end 2 (s=1) 
+    real(kind=8), dimension(3) :: x01, r1, x02, r2
+    real(kind=8), dimension(9) :: RJ1, RE1, RJ2, RE2
+    
+    !--------------------------------------------------------------
+    ! SECTION PROPERTIES
+    !--------------------------------------------------------------
+    real(kind=8) :: rho, EA, EI, GJ, betAX, betBEND, betTOR, alph0
+    real(kind=8), dimension(9) :: II
+
+    !--------------------------------------------------------------
+    ! SPLINE DISCRETIZATION
+    !--------------------------------------------------------------
+    integer :: N, Nbrev, Nbar ! Number of control points for displacement, twist and strain proj
     integer :: d ! degree of spline (ex, 3 for cubic) for displacement
     integer :: dbrev ! degree of spline for twist
     integer :: dbar ! degree of spline for strain projection
@@ -19,23 +40,49 @@ type :: Cable
     type(emxArray_2d_wrapper) :: P0, R0
     
     type(emxArray_2d_wrapper) :: Mbar, Kbar11, Dbar11
+    
+    !--------------------------------------------------------------
+    ! STATE
+    !--------------------------------------------------------------
+    real(kind=8), dimension(3) :: d1, d2, phi1, phi2
+    real(kind=8) :: gamma1, gamma2
+    type(emxArray_2d_wrapper) :: Pmid
+    type(emxArray_1d_wrapper) :: varThetamid
+    real(kind=8), dimension(3) :: d1dot, d2dot, phi1dot, phi2dot
+    real(kind=8) :: gamma1dot, gamma2dot
+    type(emxArray_2d_wrapper) :: Pmiddot
+    type(emxArray_1d_wrapper) :: varThetamiddot
+    real(kind=8), dimension(3) :: d1ddot, d2ddot, phi1ddot, phi2ddot
+    real(kind=8) :: gamma1ddot, gamma2ddot
+    type(emxArray_2d_wrapper) :: Pmidddot
+    type(emxArray_1d_wrapper) :: varThetamidddot
+    
+    type(emxArray_1d_wrapper) :: Fb
+    type(emxArray_2d_wrapper) :: Kb, Cb, Mb, Bb
 end type Cable
 
 contains
 
 !--------------------------------------------------------
 
-subroutine cable_setup(this, N, d, dbrev, dbar, Ng, refGeom, &
-                       rho, EI, EA, GJ, betBEND, betAX, betTOR)
+subroutine cable_setup(this, &
+                       x01, RJ1, RE1, r1, x02, RJ2, RE2, r2, &
+                       N, d, dbrev, dbar, Ng, refGeom, &
+                       rho, EI, EA, GJ, betBEND, betAX, betTOR, alph0, II)
 
 use GaussQuad
 use BSpline
 use MATLABelements, only: SplineApproximation, getBishopFrame, CableMbar
 
 type(Cable), intent(out) :: this
+
+real(kind=8), dimension(3), intent(in) :: x01, r1, x02, r2
+real(kind=8), dimension(9), intent(in) :: RJ1, RE1, RJ2, RE2
+
 integer, intent(in) :: N, d, dbrev, dbar, Ng
 real(kind=8), dimension(:,:), intent(in) :: refGeom ! (x,y,z) coord of reference geometry
-real(kind=8), intent(in) :: rho, EI, EA, GJ, betBEND, betAX, betTOR ! section properties
+real(kind=8), intent(in) :: rho, EI, EA, GJ, betBEND, betAX, betTOR, alph0 ! section properties
+real(kind=8), dimension(9), intent(in) :: II ! section mass moment of inertia
 
 integer :: Nbrev, Nbar, Nelem
 real(kind=8) :: Lelem
@@ -46,6 +93,26 @@ type(emxArray_1d_wrapper) :: J_
 real(kind=8), dimension(3) :: P0col1
 integer :: i
 real(kind=8) :: err
+integer :: nDof
+
+this%x01 = x01
+this%RJ1 = RJ1
+this%RE1 = RE1
+this%r1 = r1
+this%x02 = x02
+this%RJ2 = RJ2
+this%RE2 = RE2
+this%r2 = r2
+
+this%rho = rho
+this%EA = EA
+this%EI = EI
+this%GJ = GJ
+this%betAx = betAX
+this%betBEND = betBEND
+this%betTOR = betTOR
+this%alph0 = alph0
+this%II = II
 
 this%N = N
 this%d = d
@@ -84,6 +151,7 @@ call spcol(this%knots%data_, d+1, this%xg%data_, 3, this%colmat%data_)
 ! Create collocation matrix for twist
 allocate(knots_brev(N-d+1+2*dbrev))
 Nbrev = N - d + dbrev
+this%Nbrev = Nbrev
 call getKnotVector(Nbrev, dbrev+1, knots_brev)
 call emxArray_2d_create(this%colmat_brev, Ng*Nelem*2, Nbrev)
 call spcol(knots_brev, dbrev+1, this%xg%data_, 2, this%colmat_brev%data_)
@@ -92,6 +160,7 @@ deallocate(knots_brev)
 ! Create collocation matrix for strain projection
 allocate(knots_bar(N-d+1+2*dbar))
 Nbar = N - d + dbar
+this%Nbar = Nbar
 call getKnotVector(Nbar, dbar+1, knots_bar)
 call emxArray_2d_create(this%colmat_bar, Ng*Nelem, Nbar)
 call spcol(knots_bar, dbar+1, this%xg%data_, 1, this%colmat_bar%data_)
@@ -124,6 +193,45 @@ call emxArray_2d_create(this%Dbar11, Nbar, Nbar)
 call CableMbar(this%P0%emx, EA, betAX, this%colmat%emx, this%colmat_bar%emx, this%wg%emx, &
                this%Mbar%emx, this%Kbar11%emx, this%Dbar11%emx)
 
+! allocate and initialize state variables
+call emxArray_2d_create(this%Pmid, 3, N-4)
+call emxArray_1d_create(this%varThetamid, Nbrev-2)
+call emxArray_2d_create(this%Pmiddot, 3, N-4)
+call emxArray_1d_create(this%varThetamiddot, Nbrev-2)
+call emxArray_2d_create(this%Pmidddot, 3, N-4)
+call emxArray_1d_create(this%varThetamidddot, Nbrev-2)
+this%d1 = 0.d0
+this%phi1 = 0.d0 ! NOT REALLY
+this%gamma1 = 0.d0
+this%d2 = 0.d0
+this%phi2 = 0.d0 ! NOT REALLY
+this%gamma2 = 0.d0
+this%Pmid%data_ = 0.d0
+this%varThetamid%data_ = 0.d0
+this%d1dot = 0.d0
+this%phi1dot = 0.d0
+this%gamma1dot = 0.d0
+this%d2dot = 0.d0
+this%phi2dot = 0.d0
+this%gamma2dot = 0.d0
+this%Pmiddot%data_ = 0.d0
+this%varThetamiddot%data_ = 0.d0
+this%d1ddot = 0.d0
+this%phi1ddot = 0.d0
+this%gamma1ddot = 0.d0
+this%d2ddot = 0.d0
+this%phi2ddot = 0.d0
+this%gamma2ddot = 0.d0
+this%Pmidddot%data_ = 0.d0
+this%varThetamidddot%data_ = 0.d0
+
+nDof = 3*N + Nbrev
+call emxArray_1d_create(this%Fb, nDof)
+call emxArray_2d_create(this%Kb, nDof, nDof)
+call emxArray_2d_create(this%Cb, nDof, nDof)
+call emxArray_2d_create(this%Mb, nDof, nDof)
+call emxArray_2d_create(this%Bb, nDof, 3)
+
 end subroutine cable_setup
     
 !--------------------------------------------------------
@@ -144,9 +252,83 @@ call emxArray_2d_destroy(this%R0)
 call emxArray_2d_destroy(this%Mbar)
 call emxArray_2d_destroy(this%Kbar11)
 call emxArray_2d_destroy(this%Dbar11)
+call emxArray_2d_destroy(this%Pmid)
+call emxArray_1d_destroy(this%varThetamid)
+call emxArray_2d_destroy(this%Pmiddot)
+call emxArray_1d_destroy(this%varThetamiddot)
+call emxArray_2d_destroy(this%Pmidddot)
+call emxArray_1d_destroy(this%varThetamidddot)
+call emxArray_1d_destroy(this%Fb)
+call emxArray_2d_destroy(this%Kb)
+call emxArray_2d_destroy(this%Cb)
+call emxArray_2d_destroy(this%Mb)
+call emxArray_2d_destroy(this%Bb)
 
 end subroutine cable_destroy
                        
+!--------------------------------------------------------
+
+subroutine cable_setState(this, dyn, u, x, xd, xdd)
+
+use MATLABelements, only : CableForceRotBCinCoord
+
+type(Cable), intent(out) :: this
+integer, intent(in) :: dyn
+real(kind=8), dimension(3), intent(in) :: u
+real(kind=8), dimension(:), intent(in) :: x
+real(kind=8), dimension(:), intent(in), optional :: xd, xdd
+
+this%d1 = x(1:3)
+this%phi1 = x(4:6)
+this%gamma1 = x(7)
+this%d2 = x(8:10)
+this%phi2 = x(11:13)
+this%gamma2 = x(14)
+this%Pmid%data_ = reshape(x(15:(14+(3*(this%N-4)))),[3,(3*(this%N-4))])
+this%varThetamid%data_ = x((15+(3*(this%N-4))):(14+(3*(this%N-4))+this%Nbrev-2))
+
+if (present(xd)) then
+  this%d1dot = xd(1:3)
+  this%phi1dot = xd(4:6)
+  this%gamma1dot = xd(7)
+  this%d2dot = xd(8:10)
+  this%phi2dot = xd(11:13)
+  this%gamma2dot = xd(14)
+  this%Pmiddot%data_ = reshape(xd(15:(14+(3*(this%N-4)))),[3,(3*(this%N-4))])
+  this%varThetamiddot%data_ = xd((15+(3*(this%N-4))):(14+(3*(this%N-4))+this%Nbrev-2))
+endif
+
+if (present(xdd)) then
+  this%d1ddot = xdd(1:3)
+  this%phi1ddot = xdd(4:6)
+  this%gamma1ddot = xdd(7)
+  this%d2ddot = xdd(8:10)
+  this%phi2ddot = xdd(11:13)
+  this%gamma2ddot = xdd(14)
+  this%Pmidddot%data_ = reshape(xdd(15:(14+(3*(this%N-4)))),[3,(3*(this%N-4))])
+  this%varThetamidddot%data_ = xdd((15+(3*(this%N-4))):(14+(3*(this%N-4))+this%Nbrev-2))
+endif
+
+call CableForceRotBCinCoord &
+        (this%d1, this%phi1, this%gamma1, this%d2, this%phi2, this%gamma2, &
+         this%Pmid%emx, this%varThetamid%emx, this%P0%emx, &
+         this%d1dot, this%phi1dot, this%gamma1dot, &
+         this%d2dot, this%phi2dot, this%gamma2dot, &
+         this%Pmiddot%emx, this%varThetamiddot%emx, &
+         this%d1ddot, this%phi1ddot, this%gamma1ddot,&
+         this%d2ddot, this%phi2ddot, this%gamma2ddot, &
+         this%Pmidddot%emx, this%varThetamidddot%emx, &
+         this%x01, this%RJ1, this%RE1, this%r1, this%x02, this%RJ2, this%RE2, this%r2, &
+         this%R0%emx, this%II, &
+         this%rho, this%EA, this%EI, this%GJ, this%betAX, this%betBEND, this%betTOR, &
+         this%xg%emx, this%wg%emx, this%nel%emx, &
+         this%colmat%emx, this%colmat_brev%emx, this%colmat_bar%emx, &
+         real(this%d,8), real(this%dbrev,8), real(this%dbar,8), &
+         this%Mbar%emx, u, this%Kbar11%emx, this%Dbar11%emx, real(dyn,8), this%alph0, &
+         this%Fb%emx, this%Kb%emx, this%Cb%emx, this%Mb%emx, this%Bb%emx)
+
+end subroutine cable_setState
+
 !--------------------------------------------------------
 
 subroutine PiecewiseLinearCurve(coord, s, x, jac)
