@@ -3310,4 +3310,199 @@ void d_CableBCTransinCoord(const double qbar[7], const double x0[3],
   }
 }
 
+void e_CableBCTransinCoord(const double qbar[7], const double x0[3],
+                           const double RJ[9], const double RE[9],
+                           const double r[3], const double R0[9], double q[7])
+{
+  double b_hphi[9];
+  double dv[9];
+  double hphi[9];
+  double tau0_dot_tau[9];
+  double tau0_cross_tau[3];
+  double absxk;
+  double d;
+  double d1;
+  double d2;
+  double d3;
+  double d4;
+  double d5;
+  double nphi;
+  double scale;
+  double t;
+  int i;
+  int tau0_dot_tau_tmp;
+  /*  Computes the transformation from (d, phi, gamma) -> (p1, p2, vartheta) for
+   */
+  /*  one end of the cable; NOTE: the main difference from CableBCtrans.m is */
+  /*  that this function is based on exponential coordinates for the rotation,
+   */
+  /*  rather than the rotation matrix; also, a joint coordinate system and end
+   */
+  /*  offset are included, making it a more general. */
+  /*  Inputs */
+  /*  qbar = [d; phi; gamm] */
+  /*    where d = displacement of joint,  */
+  /*          phi = exponential coordinates of rotation of joint */
+  /*          gamm = distance between first and second control points */
+  /*  x0 = reference position of joint (3x1) vector */
+  /*  RJ = rotation of joint coordinate frame with respect to global */
+  /*  RE = rotation of cable end with respect to joint coordinate frame */
+  /*  r = position of cable end relative to joint in joint coordinate system */
+  /*      (end offset, 3x1 vector) */
+  /*  R0 = orientation of cable end in reference configuration */
+  /*  eta = vector to contract with for second derivative, Q */
+  /*  rho1 = vector to contract with for second derivative, Qtilde */
+  /*  rho2 = vector to contract with for third derivative, C */
+  /*  Outputs: */
+  /*  q = [p1; p2; vartheta1] */
+  /*    where p1, p2 = positions of first and second control points */
+  /*          vartheta1 = (twist) rotation of first control point */
+  /*  J = first derivative of transformation */
+  /*  Q = second derivative contracted over upper index,  */
+  /*      Q_{ib,jb} = eta_i q^i_{ib,jb} */
+  /*  Qtilde = second derivative contracted over one of the lower indices */
+  /*      Qtilde^{i}_{ib} = rho1^{jb} q^i_{ib,jb} */
+  /*  C = third derivative contracted over two lower indices */
+  /*      C^{i}_{ib} = q^i_{ib,jb,kb}rho1^{jb}rho2^{kb} */
+  /*  Computes helper functions associated with rotation matrix */
+  /*  phi = exponential coordinates of rotation */
+  /*  if flag == 0, compute a(1:2) */
+  /*  if flag == 1, compute a(1:4,9) */
+  /*  if flag == 2, compute a(1:4,9:10) */
+  /*  if flag == 3, compute a(1:11) */
+  scale = 3.3121686421112381E-170;
+  absxk = fabs(qbar[3]);
+  if (absxk > 3.3121686421112381E-170) {
+    nphi = 1.0;
+    scale = absxk;
+  } else {
+    t = absxk / 3.3121686421112381E-170;
+    nphi = t * t;
+  }
+  absxk = fabs(qbar[4]);
+  if (absxk > scale) {
+    t = scale / absxk;
+    nphi = nphi * t * t + 1.0;
+    scale = absxk;
+  } else {
+    t = absxk / scale;
+    nphi += t * t;
+  }
+  absxk = fabs(qbar[5]);
+  if (absxk > scale) {
+    t = scale / absxk;
+    nphi = nphi * t * t + 1.0;
+    scale = absxk;
+  } else {
+    t = absxk / scale;
+    nphi += t * t;
+  }
+  nphi = scale * sqrt(nphi);
+  if (nphi > 1.0E-5) {
+    absxk = sin(nphi) / nphi;
+    scale = (1.0 - cos(nphi)) / (nphi * nphi);
+  } else {
+    absxk = nphi * (nphi * (nphi * (nphi * 0.0083333333333333332) -
+                            0.16666666666666666)) +
+            1.0;
+    scale = nphi * (nphi * (nphi * (nphi * 0.0013888888888888889) -
+                            0.041666666666666664)) +
+            0.5;
+  }
+  hphi[0] = 0.0;
+  hphi[3] = -qbar[5];
+  hphi[6] = qbar[4];
+  hphi[1] = qbar[5];
+  hphi[4] = 0.0;
+  hphi[7] = -qbar[3];
+  hphi[2] = -qbar[4];
+  hphi[5] = qbar[3];
+  hphi[8] = 0.0;
+  for (i = 0; i < 3; i++) {
+    for (tau0_dot_tau_tmp = 0; tau0_dot_tau_tmp < 3; tau0_dot_tau_tmp++) {
+      b_hphi[i + 3 * tau0_dot_tau_tmp] =
+          (hphi[i] * hphi[3 * tau0_dot_tau_tmp] +
+           hphi[i + 3] * hphi[3 * tau0_dot_tau_tmp + 1]) +
+          hphi[i + 6] * hphi[3 * tau0_dot_tau_tmp + 2];
+    }
+  }
+  for (i = 0; i < 9; i++) {
+    hphi[i] = (absxk * hphi[i] + (double)iv[i]) + scale * b_hphi[i];
+  }
+  for (i = 0; i < 3; i++) {
+    d = RJ[i];
+    d1 = RJ[i + 3];
+    d2 = RJ[i + 6];
+    for (tau0_dot_tau_tmp = 0; tau0_dot_tau_tmp < 3; tau0_dot_tau_tmp++) {
+      b_hphi[i + 3 * tau0_dot_tau_tmp] = (d * hphi[3 * tau0_dot_tau_tmp] +
+                                          d1 * hphi[3 * tau0_dot_tau_tmp + 1]) +
+                                         d2 * hphi[3 * tau0_dot_tau_tmp + 2];
+    }
+  }
+  scale = 0.0;
+  for (i = 0; i < 3; i++) {
+    d = b_hphi[i];
+    d1 = b_hphi[i + 3];
+    d2 = b_hphi[i + 6];
+    for (tau0_dot_tau_tmp = 0; tau0_dot_tau_tmp < 3; tau0_dot_tau_tmp++) {
+      hphi[i + 3 * tau0_dot_tau_tmp] =
+          (d * RE[3 * tau0_dot_tau_tmp] + d1 * RE[3 * tau0_dot_tau_tmp + 1]) +
+          d2 * RE[3 * tau0_dot_tau_tmp + 2];
+    }
+    scale += R0[i] * hphi[i];
+  }
+  tau0_cross_tau[0] = R0[1] * hphi[2] - hphi[1] * R0[2];
+  tau0_cross_tau[1] = hphi[0] * R0[2] - R0[0] * hphi[2];
+  tau0_cross_tau[2] = R0[0] * hphi[1] - hphi[0] * R0[1];
+  dv[0] = 0.0;
+  dv[1] = -tau0_cross_tau[2];
+  dv[2] = tau0_cross_tau[1];
+  dv[3] = tau0_cross_tau[2];
+  dv[4] = 0.0;
+  dv[5] = -tau0_cross_tau[0];
+  dv[6] = -tau0_cross_tau[1];
+  dv[7] = tau0_cross_tau[0];
+  dv[8] = 0.0;
+  for (i = 0; i < 3; i++) {
+    d = tau0_cross_tau[i] / (scale + 1.0);
+    tau0_dot_tau[3 * i] =
+        (scale * (double)iv[i] + dv[3 * i]) + d * tau0_cross_tau[0];
+    tau0_dot_tau_tmp = 3 * i + 1;
+    tau0_dot_tau[tau0_dot_tau_tmp] =
+        (scale * (double)iv[i + 3] + dv[tau0_dot_tau_tmp]) +
+        d * tau0_cross_tau[1];
+    tau0_dot_tau_tmp = 3 * i + 2;
+    tau0_dot_tau[tau0_dot_tau_tmp] =
+        (scale * (double)iv[i + 6] + dv[tau0_dot_tau_tmp]) +
+        d * tau0_cross_tau[2];
+  }
+  d = hphi[3];
+  d1 = hphi[4];
+  d2 = hphi[5];
+  for (i = 0; i < 3; i++) {
+    tau0_cross_tau[i] = (tau0_dot_tau[i] * d + tau0_dot_tau[i + 3] * d1) +
+                        tau0_dot_tau[i + 6] * d2;
+  }
+  d = tau0_cross_tau[0];
+  d1 = tau0_cross_tau[1];
+  d2 = tau0_cross_tau[2];
+  scale = qbar[0];
+  absxk = qbar[1];
+  t = qbar[2];
+  nphi = qbar[6];
+  d3 = r[0];
+  d4 = r[1];
+  d5 = r[2];
+  for (i = 0; i < 3; i++) {
+    double d6;
+    tau0_cross_tau[i] =
+        (R0[3 * i] * d + R0[3 * i + 1] * d1) + R0[3 * i + 2] * d2;
+    d6 = (x0[i] + ((RJ[i] * scale + RJ[i + 3] * absxk) + RJ[i + 6] * t)) +
+         ((b_hphi[i] * d3 + b_hphi[i + 3] * d4) + b_hphi[i + 6] * d5);
+    q[i] = d6;
+    q[i + 3] = d6 + nphi * hphi[i];
+  }
+  q[6] = atan2(tau0_cross_tau[2], tau0_cross_tau[1]);
+}
+
 /* End of code generation (CableBCTransinCoord.c) */

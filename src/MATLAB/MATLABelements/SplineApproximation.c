@@ -248,8 +248,8 @@ void SplineApproximation(const emxArray_real_T *gamm_,
   int kidx;
   int loop_ub;
   int ma;
+  int n;
   int na;
-  int sizes_idx_0;
   int sizes_idx_1;
   signed char *C_data;
   signed char *varargin_2_data;
@@ -298,70 +298,73 @@ void SplineApproximation(const emxArray_real_T *gamm_,
   emxInit_real_T(&x, 1);
   emxInit_real_T(&a, 1);
   emxInit_real_T(&b_x, 2);
-  for (sizes_idx_1 = 0; sizes_idx_1 < i; sizes_idx_1++) {
-    i1 = (int)(3.0 * (((double)sizes_idx_1 + 1.0) - 1.0) + 1.0);
-    na = B->size[0] * B->size[1];
+  for (n = 0; n < i; n++) {
+    i1 = (int)(3.0 * (((double)n + 1.0) - 1.0) + 1.0);
+    sizes_idx_1 = B->size[0] * B->size[1];
     B->size[0] = 1;
-    kidx = colmat->size[1];
+    na = colmat->size[1];
     B->size[1] = colmat->size[1];
-    emxEnsureCapacity_real_T(B, na);
+    emxEnsureCapacity_real_T(B, sizes_idx_1);
     B_data = B->data;
-    for (na = 0; na < kidx; na++) {
-      B_data[na] = colmat_data[(i1 + colmat->size[0] * na) - 1];
+    for (sizes_idx_1 = 0; sizes_idx_1 < na; sizes_idx_1++) {
+      B_data[sizes_idx_1] =
+          colmat_data[(i1 + colmat->size[0] * sizes_idx_1) - 1];
     }
     i1 = x->size[0];
     x->size[0] = B->size[1];
     emxEnsureCapacity_real_T(x, i1);
     b_x_data = x->data;
-    kidx = B->size[1];
-    for (i1 = 0; i1 < kidx; i1++) {
+    na = B->size[1];
+    for (i1 = 0; i1 < na; i1++) {
       b_x_data[i1] = B_data[i1];
     }
     if ((M->size[0] == x->size[0]) && (M->size[1] == B->size[1])) {
-      scale = J__data[sizes_idx_1 + 1];
       i1 = b_x->size[0] * b_x->size[1];
       b_x->size[0] = x->size[0];
       b_x->size[1] = B->size[1];
       emxEnsureCapacity_real_T(b_x, i1);
       x_data = b_x->data;
-      kidx = B->size[1];
-      for (i1 = 0; i1 < kidx; i1++) {
-        sizes_idx_0 = x->size[0];
-        for (na = 0; na < sizes_idx_0; na++) {
-          x_data[na + b_x->size[0] * i1] = b_x_data[na] * B_data[i1];
+      na = B->size[1];
+      for (i1 = 0; i1 < na; i1++) {
+        kidx = x->size[0];
+        for (sizes_idx_1 = 0; sizes_idx_1 < kidx; sizes_idx_1++) {
+          x_data[sizes_idx_1 + b_x->size[0] * i1] =
+              b_x_data[sizes_idx_1] * B_data[i1];
         }
       }
-      kidx = M->size[0] * M->size[1];
-      for (i1 = 0; i1 < kidx; i1++) {
-        M_data[i1] += x_data[i1] * scale * wg_data[sizes_idx_1];
+      na = M->size[0] * M->size[1];
+      for (i1 = 0; i1 < na; i1++) {
+        M_data[i1] += x_data[i1] * J__data[n + 1] * wg_data[n];
       }
     } else {
-      binary_expand_op_34(M, x, B, J_, sizes_idx_1, wg);
+      binary_expand_op_34(M, x, B, J_, n, wg);
       M_data = M->data;
     }
     /*  index n+1 for gamm_ and J because the  */
     /*  first element is for s=0 (start point) */
     ma = x->size[0];
-    i1 = a->size[0];
-    a->size[0] = x->size[0] * 3;
-    emxEnsureCapacity_real_T(a, i1);
+    i1 = gamm_->size[0];
+    sizes_idx_1 = a->size[0];
+    a->size[0] = x->size[0] * gamm_->size[0];
+    emxEnsureCapacity_real_T(a, sizes_idx_1);
     B_data = a->data;
     kidx = -1;
     for (b_i1 = 0; b_i1 < ma; b_i1++) {
-      i1 = 3 * (sizes_idx_1 + 1);
-      B_data[kidx + 1] = b_x_data[b_i1] * gamm__data[i1];
-      B_data[kidx + 2] = b_x_data[b_i1] * gamm__data[i1 + 1];
-      B_data[kidx + 3] = b_x_data[b_i1] * gamm__data[i1 + 2];
-      kidx += 3;
+      for (na = 0; na < i1; na++) {
+        B_data[(kidx + na) + 1] =
+            b_x_data[b_i1] * gamm__data[na + gamm_->size[0] * (n + 1)];
+      }
+      if (i1 - 1 >= 0) {
+        kidx += i1;
+      }
     }
-    kidx = b->size[0];
+    na = b->size[0];
     if (b->size[0] == a->size[0]) {
-      scale = J__data[sizes_idx_1 + 1];
-      for (i1 = 0; i1 < kidx; i1++) {
-        b_data[i1] += B_data[i1] * scale * wg_data[sizes_idx_1];
+      for (i1 = 0; i1 < na; i1++) {
+        b_data[i1] += B_data[i1] * J__data[n + 1] * wg_data[n];
       }
     } else {
-      binary_expand_op_33(b, a, J_, sizes_idx_1, wg);
+      binary_expand_op_33(b, a, J_, n, wg);
       b_data = b->data;
     }
   }
@@ -371,29 +374,29 @@ void SplineApproximation(const emxArray_real_T *gamm_,
   b_x->size[1] = M->size[1];
   emxEnsureCapacity_real_T(b_x, i);
   x_data = b_x->data;
-  kidx = M->size[0] * M->size[1];
-  for (i = 0; i < kidx; i++) {
+  na = M->size[0] * M->size[1];
+  for (i = 0; i < na; i++) {
     x_data[i] = M_data[i];
   }
   ma = M->size[0];
   na = M->size[1];
-  sizes_idx_0 = M->size[0] * 3;
+  kidx = M->size[0] * 3;
   sizes_idx_1 = M->size[1] * 3;
   i = M->size[0] * M->size[1];
-  M->size[0] = sizes_idx_0;
+  M->size[0] = kidx;
   M->size[1] = sizes_idx_1;
   emxEnsureCapacity_real_T(M, i);
   M_data = M->data;
   kidx = -1;
-  for (sizes_idx_0 = 0; sizes_idx_0 < na; sizes_idx_0++) {
-    for (sizes_idx_1 = 0; sizes_idx_1 < 3; sizes_idx_1++) {
+  for (sizes_idx_1 = 0; sizes_idx_1 < na; sizes_idx_1++) {
+    for (n = 0; n < 3; n++) {
       for (b_i1 = 0; b_i1 < ma; b_i1++) {
-        M_data[kidx + 1] = x_data[b_i1 + b_x->size[0] * sizes_idx_0] *
-                           (double)iv[3 * sizes_idx_1];
-        M_data[kidx + 2] = x_data[b_i1 + b_x->size[0] * sizes_idx_0] *
-                           (double)iv[3 * sizes_idx_1 + 1];
-        M_data[kidx + 3] = x_data[b_i1 + b_x->size[0] * sizes_idx_0] *
-                           (double)iv[3 * sizes_idx_1 + 2];
+        M_data[kidx + 1] =
+            x_data[b_i1 + b_x->size[0] * sizes_idx_1] * (double)iv[3 * n];
+        M_data[kidx + 2] =
+            x_data[b_i1 + b_x->size[0] * sizes_idx_1] * (double)iv[3 * n + 1];
+        M_data[kidx + 3] =
+            x_data[b_i1 + b_x->size[0] * sizes_idx_1] * (double)iv[3 * n + 2];
         kidx += 3;
       }
     }
@@ -413,14 +416,14 @@ void SplineApproximation(const emxArray_real_T *gamm_,
     signed char i2;
     i2 = iv[3 * i];
     C_data[6 * i] = i2;
-    kidx = (int)(scale + ((double)i + 1.0)) - 1;
-    C_data[6 * kidx + 3] = i2;
+    na = (int)(scale + ((double)i + 1.0)) - 1;
+    C_data[6 * na + 3] = i2;
     i2 = iv[3 * i + 1];
     C_data[6 * i + 1] = i2;
-    C_data[6 * kidx + 4] = i2;
+    C_data[6 * na + 4] = i2;
     i2 = iv[3 * i + 2];
     C_data[6 * i + 2] = i2;
-    C_data[6 * kidx + 5] = i2;
+    C_data[6 * na + 5] = i2;
   }
   emxInit_int8_T(&varargin_2);
   i = varargin_2->size[0] * varargin_2->size[1];
@@ -436,17 +439,17 @@ void SplineApproximation(const emxArray_real_T *gamm_,
   }
   sizes_idx_1_tmp = ((M->size[0] != 0) && (M->size[1] != 0));
   if (sizes_idx_1_tmp) {
-    kidx = M->size[0];
+    na = M->size[0];
   } else if (varargin_2->size[0] != 0) {
-    kidx = varargin_2->size[0];
+    na = varargin_2->size[0];
   } else {
-    kidx = M->size[0];
+    na = M->size[0];
   }
-  empty_non_axis_sizes = (kidx == 0);
+  empty_non_axis_sizes = (na == 0);
   if (empty_non_axis_sizes || sizes_idx_1_tmp) {
-    sizes_idx_0 = M->size[1];
+    kidx = M->size[1];
   } else {
-    sizes_idx_0 = 0;
+    kidx = 0;
   }
   if (empty_non_axis_sizes || (varargin_2->size[0] != 0)) {
     sizes_idx_1 = 6;
@@ -454,19 +457,18 @@ void SplineApproximation(const emxArray_real_T *gamm_,
     sizes_idx_1 = 0;
   }
   i = b_x->size[0] * b_x->size[1];
-  b_x->size[0] = kidx;
-  b_x->size[1] = sizes_idx_0 + sizes_idx_1;
+  b_x->size[0] = na;
+  b_x->size[1] = kidx + sizes_idx_1;
   emxEnsureCapacity_real_T(b_x, i);
   x_data = b_x->data;
-  for (i = 0; i < sizes_idx_0; i++) {
-    for (i1 = 0; i1 < kidx; i1++) {
-      x_data[i1 + b_x->size[0] * i] = M_data[i1 + kidx * i];
+  for (i = 0; i < kidx; i++) {
+    for (i1 = 0; i1 < na; i1++) {
+      x_data[i1 + b_x->size[0] * i] = M_data[i1 + na * i];
     }
   }
   for (i = 0; i < sizes_idx_1; i++) {
-    for (i1 = 0; i1 < kidx; i1++) {
-      x_data[i1 + b_x->size[0] * (i + sizes_idx_0)] =
-          varargin_2_data[i1 + kidx * i];
+    for (i1 = 0; i1 < na; i1++) {
+      x_data[i1 + b_x->size[0] * (i + kidx)] = varargin_2_data[i1 + na * i];
     }
   }
   emxFree_int8_T(&varargin_2);
@@ -479,8 +481,8 @@ void SplineApproximation(const emxArray_real_T *gamm_,
   loop_ub = C->size[1];
   for (i = 0; i < loop_ub; i++) {
     for (i1 = 0; i1 < 6; i1++) {
-      na = i1 + 6 * i;
-      varargin_2_data[na] = C_data[na];
+      sizes_idx_1 = i1 + 6 * i;
+      varargin_2_data[sizes_idx_1] = C_data[sizes_idx_1];
     }
   }
   for (i = 0; i < 6; i++) {
@@ -496,36 +498,39 @@ void SplineApproximation(const emxArray_real_T *gamm_,
     sizes_idx_1 = b_varargin_2->size[1];
   }
   i = x->size[0];
-  x->size[0] = b->size[0] + 6;
+  x->size[0] = (b->size[0] + gamm_->size[0]) + gamm_->size[0];
   emxEnsureCapacity_real_T(x, i);
   b_x_data = x->data;
   loop_ub = b->size[0];
   for (i = 0; i < loop_ub; i++) {
     b_x_data[i] = b_data[i];
   }
-  b_x_data[b->size[0]] = gamm__data[0];
-  b_x_data[b->size[0] + 3] = gamm__data[3 * (gamm_->size[1] - 1)];
-  b_x_data[b->size[0] + 1] = gamm__data[1];
-  b_x_data[b->size[0] + 4] = gamm__data[3 * (gamm_->size[1] - 1) + 1];
-  b_x_data[b->size[0] + 2] = gamm__data[2];
-  b_x_data[b->size[0] + 5] = gamm__data[3 * (gamm_->size[1] - 1) + 2];
+  loop_ub = gamm_->size[0];
+  for (i = 0; i < loop_ub; i++) {
+    b_x_data[i + b->size[0]] = gamm__data[i];
+  }
+  loop_ub = gamm_->size[0];
+  for (i = 0; i < loop_ub; i++) {
+    b_x_data[(i + b->size[0]) + gamm_->size[0]] =
+        gamm__data[i + gamm_->size[0] * 2];
+  }
   if (sizes_idx_1_tmp) {
-    kidx = b_x->size[0];
+    na = b_x->size[0];
   } else {
-    kidx = 0;
+    na = 0;
   }
   emxInit_real_T(&A, 2);
   i = A->size[0] * A->size[1];
-  A->size[0] = kidx + 6;
+  A->size[0] = na + 6;
   A->size[1] = sizes_idx_1;
   emxEnsureCapacity_real_T(A, i);
   B_data = A->data;
   for (i = 0; i < sizes_idx_1; i++) {
-    for (i1 = 0; i1 < kidx; i1++) {
-      B_data[i1 + A->size[0] * i] = x_data[i1 + kidx * i];
+    for (i1 = 0; i1 < na; i1++) {
+      B_data[i1 + A->size[0] * i] = x_data[i1 + na * i];
     }
     for (i1 = 0; i1 < 6; i1++) {
-      B_data[(i1 + kidx) + A->size[0] * i] = varargin_2_data[i1 + 6 * i];
+      B_data[(i1 + na) + A->size[0] * i] = varargin_2_data[i1 + 6 * i];
     }
   }
   emxFree_real_T(&b_x);
@@ -533,19 +538,19 @@ void SplineApproximation(const emxArray_real_T *gamm_,
   b_mldivide(A, x);
   b_x_data = x->data;
   emxFree_real_T(&A);
-  sizes_idx_0 = M->size[0] - 1;
-  na = M->size[1];
+  kidx = M->size[0] - 1;
+  sizes_idx_1 = M->size[1];
   i = a->size[0];
   a->size[0] = M->size[0];
   emxEnsureCapacity_real_T(a, i);
   B_data = a->data;
-  for (sizes_idx_1 = 0; sizes_idx_1 <= sizes_idx_0; sizes_idx_1++) {
-    B_data[sizes_idx_1] = 0.0;
+  for (ma = 0; ma <= kidx; ma++) {
+    B_data[ma] = 0.0;
   }
-  for (ma = 0; ma < na; ma++) {
-    kidx = ma * M->size[0];
-    for (sizes_idx_1 = 0; sizes_idx_1 <= sizes_idx_0; sizes_idx_1++) {
-      B_data[sizes_idx_1] += M_data[kidx + sizes_idx_1] * b_x_data[ma];
+  for (loop_ub = 0; loop_ub < sizes_idx_1; loop_ub++) {
+    na = loop_ub * M->size[0];
+    for (ma = 0; ma <= kidx; ma++) {
+      B_data[ma] += M_data[na + ma] * b_x_data[loop_ub];
     }
   }
   emxFree_real_T(&M);
@@ -567,10 +572,10 @@ void SplineApproximation(const emxArray_real_T *gamm_,
       *err = fabs(B_data[0]);
     } else {
       scale = 3.3121686421112381E-170;
-      kidx = a->size[0];
-      for (ma = 0; ma < kidx; ma++) {
+      na = a->size[0];
+      for (loop_ub = 0; loop_ub < na; loop_ub++) {
         double absxk;
-        absxk = fabs(B_data[ma]);
+        absxk = fabs(B_data[loop_ub]);
         if (absxk > scale) {
           double t;
           t = scale / absxk;

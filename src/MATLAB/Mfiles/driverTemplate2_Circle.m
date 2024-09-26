@@ -181,18 +181,21 @@ for k = 1:200 % Newton iterations
              k, norm(gk), norm(Dx), armijo_alph);
 end
 
-eta = zeros(3,1);
-rho1 = zeros(3,1);
-rho2 = zeros(3,1);
-qbar1 = [d10; phi1; gamma1k];
-qbar2 = [d21; phi2; gamma2k];
-q1 = CableBCTransinCoord(qbar1, ...
-                         x01, RJ1, RE1, r1, Rb10, ...
-                         eta, rho1,rho2);
-q2 = CableBCTransinCoord(qbar2, ...
-                         x02, RJ2, RE2, r2, Rb20, ...
-                         eta, rho1,rho2);
-P = [q1(1:3) q1(4:6) Pmidk q2(4:6) q2(1:3)];
+% eta = zeros(3,1);
+% rho1 = zeros(3,1);
+% rho2 = zeros(3,1);
+% qbar1 = [d10; phi1; gamma1k];
+% qbar2 = [d21; phi2; gamma2k];
+% q1 = CableBCTransinCoord(qbar1, ...
+%                          x01, RJ1, RE1, r1, Rb10, ...
+%                          eta, rho1,rho2);
+% q2 = CableBCTransinCoord(qbar2, ...
+%                          x02, RJ2, RE2, r2, Rb20, ...
+%                          eta, rho1,rho2);
+% P = [q1(1:3) q1(4:6) Pmidk q2(4:6) q2(1:3)];
+P = getCableDeformedShape(d10,phi1,gamma1k,d21,phi2,gamma2k,Pmidk, ...
+                        x01, RJ1, RE1, r1, Rb10, ...
+                        x02, RJ2, RE2, r2, Rb20);
 
 bb0 = spmak(knots,P0);
 bb = spmak(knots,P);

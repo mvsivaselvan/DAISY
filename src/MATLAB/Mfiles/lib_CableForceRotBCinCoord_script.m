@@ -1,8 +1,8 @@
 % LIB_CABLEFORCEROTBCINCOORD_SCRIPT   Generate static library
-%  CableForceRotBCinCoord from CableForceRotBCinCoord, CableMbar, getBishopFrame, RigidBodyForce,
-%  SplineApproximation.
+%  CableForceRotBCinCoord from CableForceRotBCinCoord, CableMbar, getBishopFrame,
+%  getCableDeformedShape, RigidBodyForce, SplineApproximation.
 % 
-% Script generated from project 'lib_CableForceRotBCinCoord.prj' on 19-Sep-2024.
+% Script generated from project 'lib_CableForceRotBCinCoord.prj' on 26-Sep-2024.
 % 
 % See also CODER, CODER.CONFIG, CODER.TYPEOF, CODEGEN.
 
@@ -14,7 +14,7 @@ cfg.GenCodeOnly = true;
 cfg.SupportNonFinite = false;
 
 %% Define argument types for entry-point 'CableForceRotBCinCoord'.
-ARGS = cell(5,1);
+ARGS = cell(6,1);
 ARGS{1} = cell(57,1);
 ARGS{1}{1} = coder.typeof(0,[3 1]);
 ARGS{1}{2} = coder.typeof(0,[3 1]);
@@ -90,33 +90,53 @@ ARGS{3}{2} = coder.typeof(0,[1 Inf],[0 1]);
 ARGS{3}{3} = coder.typeof(0);
 ARGS{3}{4} = coder.typeof(0,[Inf  1],[1 0]);
 
-%% Define argument types for entry-point 'RigidBodyForce'.
-ARGS{4} = cell(15,1);
+%% Define argument types for entry-point 'getCableDeformedShape'.
+ARGS{4} = cell(17,1);
 ARGS{4}{1} = coder.typeof(0,[3 1]);
 ARGS{4}{2} = coder.typeof(0,[3 1]);
-ARGS{4}{3} = coder.typeof(0,[3 1]);
+ARGS{4}{3} = coder.typeof(0);
 ARGS{4}{4} = coder.typeof(0,[3 1]);
 ARGS{4}{5} = coder.typeof(0,[3 1]);
-ARGS{4}{6} = coder.typeof(0,[3 1]);
-ARGS{4}{7} = coder.typeof(0);
-ARGS{4}{8} = coder.typeof(0,[3 3]);
+ARGS{4}{6} = coder.typeof(0);
+ARGS{4}{7} = coder.typeof(0,[3 Inf],[0 1]);
+ARGS{4}{8} = coder.typeof(0,[3 1]);
 ARGS{4}{9} = coder.typeof(0,[3 3]);
 ARGS{4}{10} = coder.typeof(0,[3 3]);
-ARGS{4}{11} = coder.typeof(0,[3 3]);
+ARGS{4}{11} = coder.typeof(0,[3 1]);
 ARGS{4}{12} = coder.typeof(0,[3 3]);
 ARGS{4}{13} = coder.typeof(0,[3 1]);
 ARGS{4}{14} = coder.typeof(0,[3 3]);
-ARGS{4}{15} = coder.typeof(0,[3 1]);
+ARGS{4}{15} = coder.typeof(0,[3 3]);
+ARGS{4}{16} = coder.typeof(0,[3 1]);
+ARGS{4}{17} = coder.typeof(0,[3 3]);
+
+%% Define argument types for entry-point 'RigidBodyForce'.
+ARGS{5} = cell(15,1);
+ARGS{5}{1} = coder.typeof(0,[3 1]);
+ARGS{5}{2} = coder.typeof(0,[3 1]);
+ARGS{5}{3} = coder.typeof(0,[3 1]);
+ARGS{5}{4} = coder.typeof(0,[3 1]);
+ARGS{5}{5} = coder.typeof(0,[3 1]);
+ARGS{5}{6} = coder.typeof(0,[3 1]);
+ARGS{5}{7} = coder.typeof(0);
+ARGS{5}{8} = coder.typeof(0,[3 3]);
+ARGS{5}{9} = coder.typeof(0,[3 3]);
+ARGS{5}{10} = coder.typeof(0,[3 3]);
+ARGS{5}{11} = coder.typeof(0,[3 3]);
+ARGS{5}{12} = coder.typeof(0,[3 3]);
+ARGS{5}{13} = coder.typeof(0,[3 1]);
+ARGS{5}{14} = coder.typeof(0,[3 3]);
+ARGS{5}{15} = coder.typeof(0,[3 1]);
 
 %% Define argument types for entry-point 'SplineApproximation'.
-ARGS{5} = cell(6,1);
-ARGS{5}{1} = coder.typeof(0,[3 inf]);
-ARGS{5}{2} = coder.typeof(0,[1 inf]);
-ARGS{5}{3} = coder.typeof(0);
-ARGS{5}{4} = coder.typeof(0,[inf  1]);
-ARGS{5}{5} = coder.typeof(0,[inf  1]);
-ARGS{5}{6} = coder.typeof(0,[inf inf]);
-
+ARGS{6} = cell(6,1);
+ARGS{6}{1} = coder.typeof(0,[Inf  3],[1 0]);
+ARGS{6}{2} = coder.typeof(0,[Inf  1],[1 0]);
+ARGS{6}{3} = coder.typeof(0);
+ARGS{6}{4} = coder.typeof(0,[Inf  1],[1 0]);
+ARGS{6}{5} = coder.typeof(0,[Inf  1],[1 0]);
+ARGS{6}{6} = coder.typeof(0,[Inf Inf],[1 1]);
 
 %% Invoke MATLAB Coder.
-codegen -config cfg -package MATLABelements CableForceRotBCinCoord -args ARGS{1} CableMbar -args ARGS{2} getBishopFrame -args ARGS{3} RigidBodyForce -args ARGS{4} SplineApproximation -args ARGS{5}
+codegen -config cfg -package MATLABelements CableForceRotBCinCoord -args ARGS{1} CableMbar -args ARGS{2} getBishopFrame -args ARGS{3} getCableDeformedShape -args ARGS{4} RigidBodyForce -args ARGS{5} SplineApproximation -args ARGS{6}
+

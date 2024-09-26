@@ -96,6 +96,9 @@
     <ClCompile Include="..\..\MATLAB\MATLABelements\spcolC\spcolC.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\MATLAB\MATLABelements\getCableDeformedShape.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\MATLAB\MATLABelements\blkdiag.h">
@@ -189,6 +192,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\MATLAB\MATLABelements\spcolC.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\MATLAB\MATLABelements\getCableDeformedShape.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
