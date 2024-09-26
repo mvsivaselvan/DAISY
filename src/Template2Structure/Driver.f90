@@ -2,6 +2,7 @@ program main
     
 use blas95
 use lapack95
+use flib_dom
 use CableElement
     
 implicit none
@@ -59,21 +60,79 @@ real(kind=8), dimension(:), allocatable :: gk_ ! residual force during line sear
 real(kind=8), dimension(:,:), allocatable :: Dg ! stiffness matrix
 integer, dimension(:), allocatable :: ipiv ! pivot for linear solve
 
+type(fNode), pointer :: doc
+type(fNodeList), pointer :: domNodes
+type(fNode), pointer :: cableDOMnode
+type(fNode), pointer :: refgeomDOMnode
+type(fNode), pointer :: propertiesDOMnode
+type(fNode), pointer :: sectionInertiaDOMnode
+type(fNode), pointer :: splineparamDOMnode
+character(20) :: refgeomFile
+character(20) :: attribString
+
+doc => parsefile('Circle2Catenary.xml')
+domNodes => getElementsByTagName(doc,'Cable')
+cableDOMnode => item(domNodes,0)
+domNodes => getElementsByTagName(cableDOMnode,'ReferenceGeometry')
+refgeomDOMnode => item(domNodes,0)
+refgeomFile = getAttribute(refgeomDOMnode,'file')
+domNodes => getElementsByTagName(cableDOMnode,'Properties')
+propertiesDOMnode => item(domNodes,0)
+attribString = getAttribute(propertiesDOMnode,'rho')
+rho = dnum(attribString)
+attribString = getAttribute(propertiesDOMnode,'EA')
+EA = dnum(attribString)
+attribString = getAttribute(propertiesDOMnode,'EI')
+EI = dnum(attribString)
+attribString = getAttribute(propertiesDOMnode,'GJ')
+GJ = dnum(attribString)
+domNodes => getElementsByTagName(propertiesDOMnode,'SectionMassMomentOfInertia')
+sectionInertiaDOMnode => item(domNodes,0)
+attribString = getAttribute(sectionInertiaDOMnode,'I11')
+II(1,1) = dnum(attribString)
+attribString = getAttribute(sectionInertiaDOMnode,'I12')
+II(1,2) = dnum(attribString)
+attribString = getAttribute(sectionInertiaDOMnode,'I13')
+II(1,3) = dnum(attribString)
+attribString = getAttribute(sectionInertiaDOMnode,'I22')
+II(2,2) = dnum(attribString)
+attribString = getAttribute(sectionInertiaDOMnode,'I23')
+II(2,3) = dnum(attribString)
+attribString = getAttribute(sectionInertiaDOMnode,'I33')
+II(3,3) = dnum(attribString)
+II(2,1) = II(1,2)
+II(3,1) = II(1,3)
+II(3,2) = II(2,3)
+domNodes => getElementsByTagName(cableDOMnode,'SplineParameters')
+splineparamDOMnode => item(domNodes,0)
+attribString = getAttribute(splineparamDOMnode,'N')
+N = jnum(attribString)
+attribString = getAttribute(splineparamDOMnode,'d')
+d = jnum(attribString)
+attribString = getAttribute(splineparamDOMnode,'dtwist')
+dbrev = jnum(attribString)
+attribString = getAttribute(splineparamDOMnode,'dstrain')
+dbar = jnum(attribString)
+attribString = getAttribute(splineparamDOMnode,'NGauss')
+Ng = jnum(attribString)
+
+call destroyNode(doc)
+
 ! Read reference geometry from file
-open(file='refCircle.txt', unit=100, status='old')
+open(file=trim(refgeomFile), unit=100, status='old')
 do i = 1,101
     read(100,*)refGeom(i,1:3)
 enddo
 close(unit=100)
 
 ! Section properties
-rho = density*Acable
-EI = Ecable*Icable
-EA = Ecable*Acable
-GJ = (2.d0*EI)/(2.d0*(1.d0+0.3d0)) ! I is Imin, i.e., wire-wise, so J = 2*I;
-                                   ! and G = E/2/(1+nu), taking n = 0.3
-II = reshape((/1.d0, 0.d0, 0.d0, 0.d0, 1.d0, 0.d0, 0.d0, 0.d0, 2.d0/),shape(II))
-II = II*(density*(Acable/pi)**2.d0/64.d0)
+!rho = density*Acable
+!EI = Ecable*Icable
+!EA = Ecable*Acable
+!GJ = (2.d0*EI)/(2.d0*(1.d0+0.3d0)) ! I is Imin, i.e., wire-wise, so J = 2*I;
+!                                   ! and G = E/2/(1+nu), taking n = 0.3
+!II = reshape((/1.d0, 0.d0, 0.d0, 0.d0, 1.d0, 0.d0, 0.d0, 0.d0, 2.d0/),shape(II))
+!II = II*(density*(Acable/pi)**2.d0/64.d0)
 
 x01 = (/0.d0, 0.d0, 0.d0/)
 RJ1 = (/1.d0, 0.d0, 0.d0, 0.d0, 1.d0, 0.d0, 0.d0, 0.d0, 1.d0/)
@@ -139,7 +198,7 @@ do k = 1, 200
     enddo
 
     x = x_
-    write(*,'(a4,i3,a9,f13.5,a10,f13.5,a16,f13.5)')"k = ",k, &
+    write(*,'(a4,i3,a9,e13.5,a10,e13.5,a16,e13.5)')"k = ",k, &
                  ",||g|| = ",normgk, &
                  ",||Dx|| = ",nrm2(Dx), &
                  ",armijo_alpha = ",armijo_alpha     
@@ -169,5 +228,4 @@ print*,'Cable destroyed.'
 !enddo
 !close(unit=100)
 
-    
 end program main
