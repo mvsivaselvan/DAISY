@@ -17,8 +17,8 @@
 			<Tool Name="VFManifestTool" SuppressStartupBanner="true"/>
 		</Configuration>
 		<Configuration Name="Debug|x64" UseCompiler="ifxCompiler">
-			<Tool Name="VFFortranCompilerTool" SuppressStartupBanner="true" DebugInformationFormat="debugEnabled" Optimization="optimizeDisabled" AdditionalIncludeDirectories="..\FortranInterfaces\x64\Debug;..\SplineLib\x64\Debug;..\ElementsLib\x64\Debug" WarnInterfaces="true" Traceback="true" BoundsCheck="true" StackFrameCheck="true" RuntimeLibrary="rtMultiThreadedDebugDLL"/>
-			<Tool Name="VFLinkerTool" LinkIncremental="linkIncrementalNo" SuppressStartupBanner="true" AdditionalLibraryDirectories="..\SplineLib\x64\Debug;..\FortranInterfaces\x64\Debug;..\ElementsLib\x64\Debug;..\x64\Debug" GenerateDebugInformation="true" SubSystem="subSystemConsole" AdditionalDependencies="SplineLib.lib FortranInterfaces.lib ElementsLib.lib MATLABelementsLib.lib"/>
+			<Tool Name="VFFortranCompilerTool" SuppressStartupBanner="true" DebugInformationFormat="debugEnabled" Optimization="optimizeDisabled" AdditionalIncludeDirectories="..\FortranInterfaces\x64\Debug;..\SplineLib\x64\Debug;..\ElementsLib\x64\Debug;C:\Program Files (x86)\Intel\oneAPI\mkl\2024.0\include\mkl\intel64\lp64" WarnInterfaces="true" Traceback="true" BoundsCheck="true" StackFrameCheck="true" RuntimeLibrary="rtMultiThreadedDebugDLL"/>
+			<Tool Name="VFLinkerTool" LinkIncremental="linkIncrementalNo" SuppressStartupBanner="true" AdditionalLibraryDirectories="..\SplineLib\x64\Debug;..\FortranInterfaces\x64\Debug;..\ElementsLib\x64\Debug;..\x64\Debug;C:\Program Files (x86)\Intel\oneAPI\mkl\2024.0\include\mkl\intel64\lp64" GenerateDebugInformation="true" SubSystem="subSystemConsole" AdditionalDependencies="FortranInterfaces.lib MATLABelementsLib.lib SplineLib.lib ElementsLib.lib mkl_blas95_lp64.lib mkl_lapack95_lp64.lib mkl_intel_lp64.lib mkl_sequential.lib mkl_core.lib"/>
 			<Tool Name="VFResourceCompilerTool"/>
 			<Tool Name="VFMidlTool" SuppressStartupBanner="true" TargetEnvironment="midlTargetAMD64"/>
 			<Tool Name="VFCustomBuildTool"/>

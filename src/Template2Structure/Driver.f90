@@ -1,5 +1,7 @@
 program main
     
+use blas95
+use lapack95
 use CableElement
     
 implicit none
@@ -38,7 +40,24 @@ real(kind=c_double), dimension(9) :: RJ1, RE1, RJ2, RE2
 type(Cable) :: cable1
 
 real(kind=8), dimension(:), allocatable :: x ! displacement
-real(kind=8), dimension(3) :: u ! input (gravity+ground acceleration
+real(kind=8), dimension(:), allocatable :: x_ ! displacement during line search
+
+! input (gravity+ground acceleration
+real(kind=8), dimension(3) :: u = (/0.d0, 0.d0, -386.4d0/) 
+
+! line search parameters (see page 33 of Nocedal and Wright)
+real(kind=8), parameter :: armijo_gamm = 0.9d0
+real(kind=8), parameter :: armijo_c1 = 1.d-2
+real(kind=8) :: armijo_alpha
+integer :: k ! Newton iteration index
+integer :: l ! Line search step index
+integer :: nDof
+real(kind=8), dimension(:), allocatable :: gk ! residual force
+real(kind=8) :: normgk
+real(kind=8), dimension(:), allocatable :: Dx ! Newton direction
+real(kind=8), dimension(:), allocatable :: gk_ ! residual force during line search
+real(kind=8), dimension(:,:), allocatable :: Dg ! stiffness matrix
+integer, dimension(:), allocatable :: ipiv ! pivot for linear solve
 
 ! Read reference geometry from file
 open(file='refCircle.txt', unit=100, status='old')
@@ -72,12 +91,9 @@ call cable_setup(cable1, x01, RJ1, RE1, r1, x02, RJ2, RE2, r2, &
 print*,'Cable created.'
 
 ! A trial displacement
-allocate(x(3*cable1%N+cable1%Nbrev))
-x(1:3) = 0.d0
-x(4:6) = 0.d0
-x(7) = sqrt((cable1%P0%data_(1,2)-cable1%P0%data_(1,1))**2.d0 &
-          + (cable1%P0%data_(2,2)-cable1%P0%data_(2,1))**2.d0 &
-          + (cable1%P0%data_(3,2)-cable1%P0%data_(3,1))**2.d0)
+nDof = 3*cable1%N + cable1%Nbrev - 6 ! since the ends are fixed
+allocate(x(nDof+6))
+allocate(x_(nDof+6))
 x(1:3) = 0.d0
 x(4:6) = 0.d0
 x(7) = sqrt((cable1%P0%data_(1,2)-cable1%P0%data_(1,1))**2.d0 &
@@ -86,33 +102,72 @@ x(7) = sqrt((cable1%P0%data_(1,2)-cable1%P0%data_(1,1))**2.d0 &
 x(8) = 125.d0 - cable1%P0%data_(1,cable1%N)
 x(9:10) = 0.d0
 x(11:13) = 0.d0
-X(14) = -sqrt((cable1%P0%data_(1,N)-cable1%P0%data_(1,N-1))**2.d0 &
+x(14) = -sqrt((cable1%P0%data_(1,N)-cable1%P0%data_(1,N-1))**2.d0 &
            + (cable1%P0%data_(2,N)-cable1%P0%data_(2,N-1))**2.d0 &
            + (cable1%P0%data_(3,N)-cable1%P0%data_(3,N-1))**2.d0)
 x(15:(14+3*(N-4))) = reshape(cable1%P0%data_(1:3,3:N-2),[3*(N-4)])
 x((15+3*(N-4)):(14+3*(N-4)+cable1%Nbrev-2)) = 0.d0
 
-u = (/0.d0, 0.d0, -386.4d0/)
+!----------------------------------------------------------------
+! Newton's method
+!----------------------------------------------------------------
+allocate(gk(nDof))
+allocate(Dx(nDof))
+allocate(gk_(nDof))
+allocate(Dg(nDof,nDof))
+allocate(ipiv(nDof))
+do k = 1, 200
+    call cable_setState(cable1, 0, u, x)
+    
+    gk = [cable1%Fb%data_(7), cable1%Fb%data_(14:nDof+6)]
+    normgk = nrm2(gk)
+    if (normgk <= 1e-8) exit
+    
+    Dg = cable1%Kb%data_([7,14:nDof+6],[7,14:nDof+6])
+    Dx = -gk
+    call gesv(Dg, Dx, ipiv) ! this is the Newton direction
+    
+    armijo_alpha = 1.d0
+    do l = 1,50
+        x_(1:6) = x(1:6)
+        x_(8:13) = x(8:13)
+        x_([7,14:nDof+6]) = x([7,14:nDof+6]) + armijo_alpha*Dx
+        call cable_setState(cable1, 0, u, x_)
+        gk_ = [cable1%Fb%data_(7), cable1%Fb%data_(14:nDof+6)]
+        if (0.5d0*nrm2(gk_)**2.d0 <= (0.5d0 - armijo_alpha*armijo_c1)*normgk**2.d0) exit
+        armijo_alpha = armijo_alpha*armijo_gamm;
+    enddo
 
-call cable_setState(cable1, 0, u, x)
-print*,'Done setting state.'
-
-! Write Fb and Kb to files
-open(file='Fb.dat', unit=100, status='unknown')
-do i = 1,3*N+cable1%Nbrev
-    write(100,'(1e13.5)')cable1%Fb%data_(i)
+    x = x_
+    write(*,'(a4,i3,a9,f13.5,a10,f13.5,a16,f13.5)')"k = ",k, &
+                 ",||g|| = ",normgk, &
+                 ",||Dx|| = ",nrm2(Dx), &
+                 ",armijo_alpha = ",armijo_alpha     
 enddo
-close(unit=100)
-
-open(file='Kb.dat', unit=100, status='unknown')
-do i = 1,3*N+cable1%Nbrev
-    write(100,'(39e13.5)')cable1%Kb%data_(i,:)
-enddo
-close(unit=100)
+deallocate(gk)
+deallocate(gk_)
+deallocate(Dx)
+deallocate(Dg)
+deallocate(ipiv)
 
 ! Destroy cable
 call cable_destroy(cable1)
 deallocate(x)
+deallocate(x_)
 print*,'Cable destroyed.'
+
+!! Write Fb and Kb to files
+!open(file='Fb.dat', unit=100, status='unknown')
+!do i = 1,3*N+cable1%Nbrev
+!    write(100,'(1e13.5)')cable1%Fb%data_(i)
+!enddo
+!close(unit=100)
+!
+!open(file='Kb.dat', unit=100, status='unknown')
+!do i = 1,3*N+cable1%Nbrev
+!    write(100,'(39e13.5)')cable1%Kb%data_(i,:)
+!enddo
+!close(unit=100)
+
     
 end program main
