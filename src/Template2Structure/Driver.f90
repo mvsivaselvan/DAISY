@@ -69,8 +69,13 @@ type(fNode), pointer :: refgeomDOMnode
 type(fNode), pointer :: propertiesDOMnode
 type(fNode), pointer :: sectionInertiaDOMnode
 type(fNode), pointer :: splineparamDOMnode
+type(fNode), pointer :: stepDOMnode
+type(fNode), pointer :: endpositionDOMnode
 character(20) :: refgeomFile
 character(20) :: attribString
+character(20) :: defgeomFile
+
+real(kind=8) :: endpositionX
 
 call getarg(1, inpFilename, cmdLineStatus)
 
@@ -121,6 +126,14 @@ dbar = jnum(attribString)
 attribString = getAttribute(splineparamDOMnode,'NGauss')
 Ng = jnum(attribString)
 
+domNodes => getElementsByTagName(doc,'Step')
+stepDOMnode => item(domNodes,0)
+defgeomFile = getAttribute(stepDOMnode, 'OutputShapeFile')
+domNodes => getElementsByTagName(stepDOMnode,'EndPosition')
+endpositionDOMnode => item(domNodes,0)
+attribString = getAttribute(endpositionDOMnode,'X')
+endpositionX = dnum(attribString)
+
 call destroyNode(doc)
 
 ! Read reference geometry from file
@@ -154,7 +167,7 @@ x(4:6) = 0.d0
 x(7) = sqrt((cable1%P0%data_(1,2)-cable1%P0%data_(1,1))**2.d0 &
           + (cable1%P0%data_(2,2)-cable1%P0%data_(2,1))**2.d0 &
           + (cable1%P0%data_(3,2)-cable1%P0%data_(3,1))**2.d0)
-x(8) = 125.d0 - cable1%P0%data_(1,cable1%N)
+x(8) = endpositionX - cable1%P0%data_(1,cable1%N)
 x(9:10) = 0.d0
 x(11:13) = 0.d0
 x(14) = -sqrt((cable1%P0%data_(1,N)-cable1%P0%data_(1,N-1))**2.d0 &
@@ -207,7 +220,7 @@ deallocate(ipiv)
 
 ! Cable deformed shape
 call cable_getShape(cable1, ndefpts, shpe)
-open(file='defShape.dat', unit=100, status='unknown')
+open(file=defgeomFile, unit=100, status='unknown')
 do i = 1,ndefpts
     write(100,'(3e13.5)')shpe(i,:)
 enddo
