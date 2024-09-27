@@ -331,6 +331,61 @@ end subroutine cable_setState
 
 !--------------------------------------------------------
 
+subroutine cable_getShape(this, npts, shpe)
+
+use BSpline
+use MATLABelements, only : getCableDeformedShape
+
+type(Cable), intent(in) :: this
+integer, intent(in) :: npts ! number of points in shaps
+real(kind=8), dimension(:,:), intent(out) :: shpe
+
+real(kind=8), dimension(:), allocatable :: s
+real(kind=8), dimension(:,:), allocatable :: colmat
+
+real(kind=8), dimension(9) :: Rb10, Rb20
+type(emxArray_2d_wrapper) :: P
+
+integer :: Nelem, Rlastind
+integer :: i, j
+
+Nelem = this%N - this%d
+Rlastind = 3*(1+Nelem*this%Ng)
+do i = 1,3
+    do j = 1,3
+        Rb10((j-1)*3+i) = this%R0%data_(i,j)
+        Rb20((j-1)*3+i) = this%R0%data_(i,Rlastind+j)
+    enddo
+enddo
+
+call emxArray_2d_create(P, 3, this%N)
+call getCableDeformedShape(this%d1, this%phi1, this%gamma1, &
+                           this%d2, this%phi2, this%gamma2, &
+                           this%Pmid%emx, &
+                           this%x01, this%RJ1, this%RE1, this%r1, Rb10, &
+                           this%x02, this%RJ2, this%RE2, this%r2, Rb20, &
+                           P%emx)
+
+allocate(s(npts))
+allocate(colmat(npts,this%N))
+
+s(1) = 0.d0
+do i = 2,npts
+    s(i) = s(i-1) + 1.d0/(npts-1)
+enddo
+
+call spcol(this%knots%data_, this%d+1, s, 1, colmat)
+
+shpe = matmul(colmat,transpose(P%data_)) ! USE BLAS FOR THIS
+
+deallocate(s)
+deallocate(colmat)
+call emxArray_2d_destroy(P)
+
+end subroutine cable_getShape
+
+!--------------------------------------------------------
+
 subroutine PiecewiseLinearCurve(coord, s, x, jac)
 
 ! Piecewise linear curve connecting given points coord

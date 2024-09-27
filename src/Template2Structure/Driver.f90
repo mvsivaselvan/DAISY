@@ -59,6 +59,9 @@ real(kind=8), dimension(:), allocatable :: gk_ ! residual force during line sear
 real(kind=8), dimension(:,:), allocatable :: Dg ! stiffness matrix
 integer, dimension(:), allocatable :: ipiv ! pivot for linear solve
 
+integer, parameter :: ndefpts = 101
+real(kind=8), dimension(ndefpts,3) :: shpe
+
 type(fNode), pointer :: doc
 type(fNodeList), pointer :: domNodes
 type(fNode), pointer :: cableDOMnode
@@ -201,6 +204,14 @@ deallocate(gk_)
 deallocate(Dx)
 deallocate(Dg)
 deallocate(ipiv)
+
+! Cable deformed shape
+call cable_getShape(cable1, ndefpts, shpe)
+open(file='defShape.dat', unit=100, status='unknown')
+do i = 1,ndefpts
+    write(100,'(3e13.5)')shpe(i,:)
+enddo
+close(unit=100)
 
 ! Destroy cable
 call cable_destroy(cable1)

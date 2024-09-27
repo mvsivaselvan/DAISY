@@ -113,4 +113,21 @@ end interface
 
 !-------------------------------------------------------------
 
+interface
+    subroutine getCableDeformedShape(d1, phi1, gamm1, d2, phi2, gamm2, Pmid, &
+        x01, RJ1, RE1, r1, Rb10, x02, RJ2, RE2, r2, Rb20, P) bind(C, name="getCableDeformedShape")
+        use, intrinsic :: iso_c_binding
+        use emxArray
+        implicit none
+        real(kind=8), dimension(3), intent(in) :: d1, phi1, d2, phi2
+        real(kind=8), value, intent(in) :: gamm1, gamm2
+        type(emxArray_real_T), intent(in) :: Pmid
+        real(kind=8), dimension(3), intent(in) :: x01, x02, r1, r2
+        real(kind=c_double), dimension(9), intent(in) :: RJ1, RE1, RJ2, RE2, Rb10, Rb20
+        type(emxArray_real_T), intent(out) :: P
+    end subroutine getCableDeformedShape
+end interface
+    
+!-------------------------------------------------------------
+
 end module MATLABelements

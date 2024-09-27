@@ -14,7 +14,7 @@ cfg.GenCodeOnly = true;
 cfg.SupportNonFinite = false;
 
 %% Define argument types for entry-point 'CableForceRotBCinCoord'.
-ARGS = cell(5,1);
+ARGS = cell(6,1);
 ARGS{1} = cell(57,1);
 ARGS{1}{1} = coder.typeof(0,[3 1]);
 ARGS{1}{2} = coder.typeof(0,[3 1]);
@@ -117,6 +117,31 @@ ARGS{5}{4} = coder.typeof(0,[inf  1]);
 ARGS{5}{5} = coder.typeof(0,[inf  1]);
 ARGS{5}{6} = coder.typeof(0,[inf inf]);
 
+%% Define argument types for entry-point 'getCableDeformedShape'.
+ARGS{6} = cell(17,1);
+ARGS{6}{1} = coder.typeof(0,[3 1]);
+ARGS{6}{2} = coder.typeof(0,[3 1]);
+ARGS{6}{3} = coder.typeof(0);
+ARGS{6}{4} = coder.typeof(0,[3 1]);
+ARGS{6}{5} = coder.typeof(0,[3 1]);
+ARGS{6}{6} = coder.typeof(0);
+ARGS{6}{7} = coder.typeof(0,[3 inf]);
+ARGS{6}{8} = coder.typeof(0,[3 1]);
+ARGS{6}{9} = coder.typeof(0,[3 3]);
+ARGS{6}{10} = coder.typeof(0,[3 3]);
+ARGS{6}{11} = coder.typeof(0,[3 1]);
+ARGS{6}{12} = coder.typeof(0,[3 3]);
+ARGS{6}{13} = coder.typeof(0,[3 1]);
+ARGS{6}{14} = coder.typeof(0,[3 3]);
+ARGS{6}{15} = coder.typeof(0,[3 3]);
+ARGS{6}{16} = coder.typeof(0,[3 1]);
+ARGS{6}{17} = coder.typeof(0,[3 3]);
 
 %% Invoke MATLAB Coder.
-codegen -config cfg -package MATLABelements CableForceRotBCinCoord -args ARGS{1} CableMbar -args ARGS{2} getBishopFrame -args ARGS{3} RigidBodyForce -args ARGS{4} SplineApproximation -args ARGS{5}
+codegen -config cfg -package MATLABelements ...
+        CableForceRotBCinCoord -args ARGS{1} ...
+        CableMbar -args ARGS{2} ...
+        getBishopFrame -args ARGS{3} ...
+        RigidBodyForce -args ARGS{4} ...
+        SplineApproximation -args ARGS{5} ...
+        getCableDeformedShape -args ARGS{6}

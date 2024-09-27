@@ -50,6 +50,10 @@ void d_CableBCTransinCoord(const double qbar[7], const double x0[3],
                            const double rho2[7], double q[7], double J[49],
                            double Q[49], double Qtilde[49], double C[49]);
 
+void e_CableBCTransinCoord(const double qbar[7], const double x0[3],
+                           const double RJ[9], const double RE[9],
+                           const double r[3], const double R0[9], double q[7]);
+
 #ifdef __cplusplus
 }
 #endif
