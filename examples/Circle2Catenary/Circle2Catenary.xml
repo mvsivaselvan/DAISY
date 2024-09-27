@@ -1,0 +1,15 @@
+ <DAISYDataSet>
+	<Cable ID="100">
+		<ReferenceGeometry file="refCircle.txt"/>
+		<Properties rho="3.9878e-4" EA="157e5" EI="21800" GJ="16769" betBEND="0.01" betAX="0.01" betTOR="0.01" alpha="0.0">
+			<SectionMassMomentOfInertia I11="9.9e-7" I12="0.0" I13="0.0" I22="9.9e-7" I23="0.0" I33="1.98e-6"/>
+		</Properties>
+		<SplineParameters N="10" d="3" dtwist="2" dstrain="1" NGauss="3"/>
+	</Cable>	
+	<Step ID="1" Nature="Nonlinear" Type="CableShape" GeometricNonlinear="TRUE" AnalysisDuration="1" OutputShapeFile="deformedShape.txt">
+		<StartPosition X="0.0" Y="0.0" Z = "0.0"/>
+		<StartRotation X="0.0" Y="0.0" Z = "0.0"/>
+		<EndPosition X="125.0" Y="0.0" Z = "0.0"/>
+		<EndRotation X="0.0" Y="0.0" Z = "0.0"/>
+	</Step>
+ </DAISYDataSet>
