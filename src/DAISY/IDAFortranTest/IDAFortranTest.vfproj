@@ -17,8 +17,8 @@
 			<Tool Name="VFManifestTool" SuppressStartupBanner="true"/>
 		</Configuration>
 		<Configuration Name="Debug|x64" UseCompiler="ifxCompiler">
-			<Tool Name="VFFortranCompilerTool" SuppressStartupBanner="true" DebugInformationFormat="debugEnabled" Optimization="optimizeDisabled" AdditionalIncludeDirectories="C:\Users\mvs\source\repos\sundials711\fortran" WarnInterfaces="true" Traceback="true" BoundsCheck="true" StackFrameCheck="true" RuntimeLibrary="rtMultiThreadedDebugDLL"/>
-			<Tool Name="VFLinkerTool" LinkIncremental="linkIncrementalNo" SuppressStartupBanner="true" AdditionalLibraryDirectories="C:\Users\mvs\source\repos\sundials711\lib" GenerateDebugInformation="true" SubSystem="subSystemConsole" AdditionalDependencies="sundials_core_static.lib sundials_fcore_mod.lib sundials_fida_mod_static.lib sundials_fnvecserial_mod_static.lib sundials_ida_static.lib sundials_nvecserial_static.lib"/>
+			<Tool Name="VFFortranCompilerTool" SuppressStartupBanner="true" DebugInformationFormat="debugEnabled" Optimization="optimizeDisabled" AdditionalIncludeDirectories="C:\Users\mvs\source\repos\sundials711\fortran;C:\Program Files (x86)\Intel\oneAPI\mkl\2024.0\include\mkl\intel64\lp64" WarnInterfaces="true" Traceback="true" BoundsCheck="true" StackFrameCheck="true" RuntimeLibrary="rtMultiThreadedDebugDLL"/>
+			<Tool Name="VFLinkerTool" LinkIncremental="linkIncrementalNo" SuppressStartupBanner="true" AdditionalLibraryDirectories="C:\Users\mvs\source\repos\sundials711\lib;C:\Program Files (x86)\Intel\oneAPI\mkl\2024.0\include\mkl\intel64\lp64" GenerateDebugInformation="true" SubSystem="subSystemConsole" AdditionalDependencies="sundials_core_static.lib sundials_fcore_mod.lib sundials_fida_mod_static.lib sundials_fnvecserial_mod_static.lib sundials_ida_static.lib sundials_nvecserial_static.lib mkl_lapack95_lp64.lib mkl_intel_lp64.lib mkl_sequential.lib mkl_core.lib"/>
 			<Tool Name="VFResourceCompilerTool"/>
 			<Tool Name="VFMidlTool" SuppressStartupBanner="true" TargetEnvironment="midlTargetAMD64"/>
 			<Tool Name="VFCustomBuildTool"/>

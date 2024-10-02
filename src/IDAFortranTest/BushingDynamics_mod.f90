@@ -2,6 +2,8 @@ module BushingDynamics
 
 use, intrinsic :: iso_c_binding
 use fsundials_core_mod
+use fida_mod
+use fnvector_serial_mod
     
 implicit none
 
@@ -123,50 +125,19 @@ type(Bushing), pointer :: this
 
 real(kind=8), dimension(:), pointer :: y, yp, r
 
-real(kind=8) :: Delt, thet, dDelt, dthet
-real(kind=8), dimension(2,2) :: Mmat
+real(kind=8), dimension(2,2) :: Mmat, Cmat, Kmat
 real(kind=8), dimension(2) :: F
-real(kind=8) :: ux_, uz_
-integer :: n
 
 y => FN_VGetArrayPointer(sunvec_y)
 yp => FN_VGetArrayPointer(sunvec_yp)
 r => FN_VGetArrayPointer(sunvec_r)
 call c_f_pointer(user_data, this)
 
-Delt = y(1)
-thet = y(2)
-dDelt = y(3)
-dthet = y(4)
-
-! Mass matrix
-Mmat(1,1) = this%m
-Mmat(2,1) = -this%m*this%h*sin(thet+this%theta0)
-Mmat(1,2) = Mmat(2,1)
-Mmat(2,2) = this%II
-
-! Input ground acceleration
-n = floor(t/this%dtu)
-if (n > size(this%ux)-1) then
-    ux_ = 0.d0
-    uz_ = 0.d0
-else
-    ux_ = this%ux(n) + (this%ux(n+1)-this%ux(n))/this%dtu*(t - (n-1)*this%dtu)
-    uz_ = this%uz(n) + (this%uz(n+1)-this%uz(n))/this%dtu*(t - (n-1)*this%dtu)
-endif
-
-! Forces other then mass x accel
-F(1) = -this%m*this%h*cos(thet+this%theta0)*dthet**2.d0 &
-     + this%kv*Delt &
-     + this%m*g*(1.d0+uz_) &
-     + this%cv*dDelt
-F(2) = this%kr*thet &
-     + this%m*this%h*g*(-(1.d0+uz_)*sin(thet+this%theta0)+ux_*cos(thet+this%theta0)) &
-     + this%cr*dthet
+call bushing_ForceAndTangent(this, t, y, yp, F, Mmat, Cmat, Kmat)
 
 ! Residual
 r(1:2) = yp(1:2)- y(3:4)
-r(3:4) = matmul(Mmat,yp(3:4)) + F
+r(3:4) = F
 
 ierr = 0
 
@@ -181,10 +152,170 @@ type(c_ptr), intent(in) :: ida_mem
 type(c_ptr), intent(in) :: ctx
 type(SUNLinearSolver), pointer, intent(out) :: LS
 
+type(SUNLinearSolver_Ops), pointer :: ops
+
 LS => FSUNLinSolNewEmpty(ctx)
+
+call c_f_pointer(LS%ops, ops)
+ops%gettype = c_funloc(bushing_MatrixEmbeddedLSType)
+ops%solve = c_funloc(bushing_MatrixEmbeddedLSSolve)
+ops%free = c_funloc(bushing_MatrixEmbeddedLSFree)
+
+LS%content = ida_mem
 
 end subroutine bushing_MatrixEmbeddedLS
     
 !----------------------------------------------------------
 
+integer(SUNLinearSolver_Type) function bushing_MatrixEmbeddedLSType(LS_cptr) &
+    result(lstype) bind(C, name='bushing_MatrixEmbeddedLSType')
+
+type(c_ptr), intent(in) :: LS_cptr
+
+lstype = SUNLINEARSOLVER_MATRIX_EMBEDDED
+
+end function bushing_MatrixEmbeddedLSType
+
+!----------------------------------------------------------
+
+integer(c_int) function bushing_MatrixEmbeddedLSSolve(LS_cptr, A, x_cptr, b_cptr, tol) &
+    result(ierr) bind(C, name='bushing_MatrixEmbeddedLSSolve')
+
+use lapack95
+
+type(c_ptr), intent(in) :: LS_cptr
+type(c_ptr), intent(in) :: A ! This is a SUNMatrix object that is not used
+type(c_ptr), intent(inout) :: x_cptr ! This is actually intent out
+type(c_ptr), intent(in) :: b_cptr
+real(c_double), value, intent(in) :: tol
+
+type(SUNLinearSolver), pointer :: LS
+type(N_Vector), pointer :: x_fptr, b_fptr
+
+real(kind=8), dimension(:), pointer :: x, b
+
+integer, parameter :: neq = 4
+real(kind=8), dimension(neq), target :: ypred, yppred, yn, ypn, res
+real(kind=8), dimension(1) :: t, cj
+type(c_ptr) :: user_data
+type(Bushing), pointer :: this
+integer :: retval
+
+real(kind=8), dimension(2) :: F
+real(kind=8), dimension(2,2) :: Mmat, Cmat, Kmat, Kbar
+real(kind=8), dimension(2) :: rhs
+integer, dimension(2) :: ipiv
+
+call c_f_pointer(LS_cptr, LS)
+call c_f_pointer(x_cptr, x_fptr)
+call c_f_pointer(b_cptr, b_fptr)
+
+x => FN_VGetArrayPointer_Serial(x_fptr)
+b => FN_VGetArrayPointer_Serial(b_fptr)
+
+retval = FIDAGetNonlinearSystemData(LS%content, t, &
+                                    c_loc(ypred), c_loc(yppred), &
+                                    c_loc(yn), c_loc(ypn), &
+                                    c_loc(res), cj, user_data)
+call c_f_pointer(user_data, this)
+
+call bushing_ForceAndTangent(this, t(1), ypred, yppred, F, Mmat, Cmat, Kmat)
+
+rhs(1) = b(3) - (Cmat(1,1)+cj(1)*Mmat(1,1))*b(1) - (Cmat(1,2)+cj(1)*Mmat(1,2))*b(2) 
+rhs(2) = b(4) - (Cmat(2,1)+cj(1)*Mmat(2,1))*b(1) - (Cmat(2,2)+cj(1)*Mmat(2,2))*b(2) 
+
+Kbar = Kmat + cj(1)*Cmat + Cj(1)*cj(1)*Mmat
+
+call gesv(Kbar, rhs, ipiv)
+
+x(1:2) = rhs
+x(3:4) = b(1:2) + cj(1)*x(1:2)
+
+ierr = SUN_SUCCESS
+
+end function bushing_MatrixEmbeddedLSSolve
+    
+!----------------------------------------------------------
+
+integer(c_int) function bushing_MatrixEmbeddedLSFree(LS_cptr) &
+    result(ierr) bind(C, name='bushing_MatrixEmbeddedLSFree')
+
+type(c_ptr) :: LS_cptr
+
+type(SUNLinearSolver), pointer :: LS
+
+call c_f_pointer(LS_cptr, LS)
+LS%content = c_null_ptr
+call FSUNLinSolFreeEmpty(LS)
+
+ierr = SUN_SUCCESS
+
+end function bushing_MatrixEmbeddedLSFree
+    
+!----------------------------------------------------------
+
+subroutine bushing_ForceAndTangent(this, t, y, yp, F, Mmat, Cmat, Kmat)
+
+type(Bushing), intent(in) :: this
+real(kind=8), intent(in) :: t
+real(kind=8), dimension(4), intent(in) :: y, yp
+real(kind=8), dimension(2), intent(out) :: F
+real(kind=8), dimension(2,2), intent(out) :: Mmat, Cmat, Kmat
+
+real(kind=8) :: Delt, thet, dDelt, dthet, ddDelt, ddThet
+real(kind=8) :: c, s
+real(kind=8) :: ux_, uz_
+integer :: n
+
+Delt = y(1)
+thet = y(2)
+dDelt = y(3)
+dthet = y(4)
+ddDelt = yp(3)
+ddthet = yp(4)
+
+c = cos(thet+this%theta0)
+s = sin(thet+this%theta0)
+
+! Mass matrix
+Mmat(1,1) = this%m
+Mmat(2,1) = -this%m*this%h*s
+Mmat(1,2) = Mmat(2,1)
+Mmat(2,2) = this%II
+
+! Input ground acceleration
+n = floor(t/this%dtu)
+if (n > size(this%ux)-1) then
+    ux_ = 0.d0
+    uz_ = 0.d0
+else
+    ux_ = this%ux(n) + (this%ux(n+1)-this%ux(n))/this%dtu*(t - (n-1)*this%dtu)
+    uz_ = this%uz(n) + (this%uz(n+1)-this%uz(n))/this%dtu*(t - (n-1)*this%dtu)
+endif
+
+! Forces other then mass x accel
+F(1) = -this%m*this%h*c*dthet**2.d0 &
+     + this%kv*Delt &
+     + this%m*g*(1.d0+uz_) &
+     + this%cv*dDelt &
+     + Mmat(1,1)*yp(3) + Mmat(1,2)*yp(4)
+F(2) = this%kr*thet &
+     + this%m*this%h*g*(-(1.d0+uz_)*s+ux_*c) &
+     + this%cr*dthet &
+     + Mmat(2,1)*yp(3) + Mmat(2,2)*yp(4)
+
+Cmat(1,1) = this%cv
+Cmat(1,2) = -2.d0*this%m*this%h*c*dthet
+Cmat(2,1) = 0.d0
+Cmat(2,2) = this%cr
+
+Kmat(1,1) = this%kv
+Kmat(1,2) = this%m*this%h*(-c*ddthet+s*dthet**2.d0)
+Kmat(2,1) = 0.d0
+Kmat(2,2) = this%kr - this%m*this%h*(s*(ddDelt+ux_)+c*(1.d0*uz_))
+
+end subroutine bushing_ForceAndTangent 
+
+!----------------------------------------------------------
+    
 end module BushingDynamics
