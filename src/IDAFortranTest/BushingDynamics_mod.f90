@@ -174,19 +174,16 @@ end function bushing_res
 
 !----------------------------------------------------------
 
-type(c_ptr) function bushing_MatrixEmbeddedLS(ida_mem, ctx) &
-    result(LS_cptr) bind(C, name='bushing_MatrixEmbeddedLS')
+subroutine bushing_MatrixEmbeddedLS(ida_mem, ctx, LS) &
+    bind(C, name='bushing_MatrixEmbeddedLS')
 
-type(c_ptr) :: ida_mem
-type(c_ptr) :: ctx
-
-type(SUNLinearSolver), pointer :: LS
+type(c_ptr), intent(in) :: ida_mem
+type(c_ptr), intent(in) :: ctx
+type(SUNLinearSolver), pointer, intent(out) :: LS
 
 LS => FSUNLinSolNewEmpty(ctx)
 
-LS_cptr = c_loc(LS)
-
-end function bushing_MatrixEmbeddedLS
+end subroutine bushing_MatrixEmbeddedLS
     
 !----------------------------------------------------------
 

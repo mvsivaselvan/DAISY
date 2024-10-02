@@ -43,8 +43,7 @@ type(c_ptr) :: sunctx ! SUNDIALS simulation context
 type(N_Vector), pointer :: sunvec_y, sunvec_yp
 type(N_Vector), pointer :: sunvec_atol
 type(c_ptr) :: ida_mem 
-type(c_ptr) :: LS_cptr
-type(SUNLinearSolver), pointer :: LS
+type(SUNLinearSolver), pointer :: linsolver
 type(SUNMatrix), pointer :: amat ! not used since using custom linear solver
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -75,10 +74,9 @@ retval = FIDASVtolerances(ida_mem, rtol, sunvec_atol)
 retval = FIDASetUserData(ida_mem, c_loc(bush))
 
 ! Step 4 - Construct and attach custom linear solver
-LS_cptr = bushing_MatrixEmbeddedLS(ida_mem, sunctx)
-call c_f_pointer(LS_Cptr, LS)
+call bushing_MatrixEmbeddedLS(ida_mem, sunctx, linsolver)
 nullify(amat)
-retval = FIDASetLinearSolver(ida_mem, LS, amat)
+retval = FIDASetLinearSolver(ida_mem, linsolver, amat)
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 ! Start cleanup
