@@ -161,16 +161,16 @@ ops%gettype = c_funloc(bushing_MatrixEmbeddedLSType)
 ops%solve = c_funloc(bushing_MatrixEmbeddedLSSolve)
 ops%free = c_funloc(bushing_MatrixEmbeddedLSFree)
 
-LS%content = ida_mem
+! LS%content = ida_mem
 
 end subroutine bushing_MatrixEmbeddedLS
     
 !----------------------------------------------------------
 
-integer(SUNLinearSolver_Type) function bushing_MatrixEmbeddedLSType(LS_cptr) &
+integer(SUNLinearSolver_Type) function bushing_MatrixEmbeddedLSType(LS) &
     result(lstype) bind(C, name='bushing_MatrixEmbeddedLSType')
 
-type(c_ptr), intent(in) :: LS_cptr
+type(SUNLinearSolver), intent(in) :: LS
 
 lstype = SUNLINEARSOLVER_MATRIX_EMBEDDED
 
@@ -178,19 +178,16 @@ end function bushing_MatrixEmbeddedLSType
 
 !----------------------------------------------------------
 
-integer(c_int) function bushing_MatrixEmbeddedLSSolve(LS_cptr, A, x_cptr, b_cptr, tol) &
+integer(c_int) function bushing_MatrixEmbeddedLSSolve(LS, sunmat_A, sunvec_x, sunvec_b, tol) &
     result(ierr) bind(C, name='bushing_MatrixEmbeddedLSSolve')
 
 use lapack95
 
-type(c_ptr), intent(in) :: LS_cptr
-type(c_ptr), intent(in) :: A ! This is a SUNMatrix object that is not used
-type(c_ptr), intent(inout) :: x_cptr ! This is actually intent out
-type(c_ptr), intent(in) :: b_cptr
+type(SUNLinearSolver), intent(in) :: LS
+type(SUNMatrix), intent(in) :: sunmat_A ! This is a SUNMatrix object that is not used
+type(N_Vector), intent(inout) :: sunvec_x ! This is actually intent out
+type(N_Vector), intent(inout) :: sunvec_b ! This is actually intent in
 real(c_double), value, intent(in) :: tol
-
-type(SUNLinearSolver), pointer :: LS
-type(N_Vector), pointer :: x_fptr, b_fptr
 
 real(kind=8), dimension(:), pointer :: x, b
 
@@ -206,12 +203,8 @@ real(kind=8), dimension(2,2) :: Mmat, Cmat, Kmat, Kbar
 real(kind=8), dimension(2) :: rhs
 integer, dimension(2) :: ipiv
 
-call c_f_pointer(LS_cptr, LS)
-call c_f_pointer(x_cptr, x_fptr)
-call c_f_pointer(b_cptr, b_fptr)
-
-x => FN_VGetArrayPointer_Serial(x_fptr)
-b => FN_VGetArrayPointer_Serial(b_fptr)
+x => FN_VGetArrayPointer_Serial(sunvec_x)
+b => FN_VGetArrayPointer_Serial(sunvec_b)
 
 retval = FIDAGetNonlinearSystemData(LS%content, t, &
                                     c_loc(ypred), c_loc(yppred), &
@@ -237,14 +230,11 @@ end function bushing_MatrixEmbeddedLSSolve
     
 !----------------------------------------------------------
 
-integer(c_int) function bushing_MatrixEmbeddedLSFree(LS_cptr) &
+integer(c_int) function bushing_MatrixEmbeddedLSFree(LS) &
     result(ierr) bind(C, name='bushing_MatrixEmbeddedLSFree')
 
-type(c_ptr) :: LS_cptr
+type(SUNLinearSolver), target :: LS
 
-type(SUNLinearSolver), pointer :: LS
-
-call c_f_pointer(LS_cptr, LS)
 LS%content = c_null_ptr
 call FSUNLinSolFreeEmpty(LS)
 

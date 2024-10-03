@@ -83,6 +83,7 @@ retval = FIDASetLinearSolver(ida_mem, linsolver, amat)
 call bushing_destroy(bush)
 
 call FIDAFree(ida_mem)
+retval = FSUNLinSolFree(linsolver)
 call FN_VDestroy(sunvec_y)
 call FN_VDestroy(sunvec_yp)
 call FN_VDestroy(sunvec_atol)
