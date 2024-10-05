@@ -119,7 +119,7 @@ real(c_double), value, intent(in) :: t
 type(N_Vector), intent(inout) :: sunvec_y 
 type(N_Vector), intent(inout) :: sunvec_yp
 type(N_Vector), intent(out) :: sunvec_r
-type(c_ptr), intent(in) :: user_data
+type(c_ptr), value, intent(in) :: user_data
 
 type(Bushing), pointer :: this
 
@@ -161,7 +161,7 @@ ops%gettype = c_funloc(bushing_MatrixEmbeddedLSType)
 ops%solve = c_funloc(bushing_MatrixEmbeddedLSSolve)
 ops%free = c_funloc(bushing_MatrixEmbeddedLSFree)
 
-! LS%content = ida_mem
+LS%content = ida_mem
 
 end subroutine bushing_MatrixEmbeddedLS
     
@@ -214,15 +214,15 @@ call c_f_pointer(user_data, this)
 
 call bushing_ForceAndTangent(this, t(1), ypred, yppred, F, Mmat, Cmat, Kmat)
 
-rhs(1) = b(3) - (Cmat(1,1)+cj(1)*Mmat(1,1))*b(1) - (Cmat(1,2)+cj(1)*Mmat(1,2))*b(2) 
-rhs(2) = b(4) - (Cmat(2,1)+cj(1)*Mmat(2,1))*b(1) - (Cmat(2,2)+cj(1)*Mmat(2,2))*b(2) 
+rhs(1) = b(3) + (Cmat(1,1)+cj(1)*Mmat(1,1))*b(1) + (Cmat(1,2)+cj(1)*Mmat(1,2))*b(2) 
+rhs(2) = b(4) + (Cmat(2,1)+cj(1)*Mmat(2,1))*b(1) + (Cmat(2,2)+cj(1)*Mmat(2,2))*b(2) 
 
 Kbar = Kmat + cj(1)*Cmat + Cj(1)*cj(1)*Mmat
 
 call gesv(Kbar, rhs, ipiv)
 
 x(1:2) = rhs
-x(3:4) = b(1:2) + cj(1)*x(1:2)
+x(3:4) = cj(1)*x(1:2) - b(1:2)
 
 ierr = SUN_SUCCESS
 
@@ -274,7 +274,7 @@ Mmat(1,2) = Mmat(2,1)
 Mmat(2,2) = this%II
 
 ! Input ground acceleration
-n = floor(t/this%dtu)
+n = floor(t/this%dtu) + 1
 if (n > size(this%ux)-1) then
     ux_ = 0.d0
     uz_ = 0.d0
@@ -283,13 +283,14 @@ else
     uz_ = this%uz(n) + (this%uz(n+1)-this%uz(n))/this%dtu*(t - (n-1)*this%dtu)
 endif
 
-! Forces other then mass x accel
-F(1) = -this%m*this%h*c*dthet**2.d0 &
+F(1) = Mmat(1,1)*ddDelt + Mmat(1,2)*ddthet &
+     - this%m*this%h*c*dthet**2.d0 &
      + this%kv*Delt &
      + this%m*g*(1.d0+uz_) &
      + this%cv*dDelt &
      + Mmat(1,1)*yp(3) + Mmat(1,2)*yp(4)
-F(2) = this%kr*thet &
+F(2) = Mmat(2,1)*ddDelt + Mmat(2,2)*ddthet &
+     + this%kr*thet &
      + this%m*this%h*g*(-(1.d0+uz_)*s+ux_*c) &
      + this%cr*dthet &
      + Mmat(2,1)*yp(3) + Mmat(2,2)*yp(4)
@@ -302,7 +303,7 @@ Cmat(2,2) = this%cr
 Kmat(1,1) = this%kv
 Kmat(1,2) = this%m*this%h*(-c*ddthet+s*dthet**2.d0)
 Kmat(2,1) = 0.d0
-Kmat(2,2) = this%kr - this%m*this%h*(s*(ddDelt+ux_)+c*(1.d0*uz_))
+Kmat(2,2) = this%kr-this%m*this%h*(c*(g*(1.d0+uz_)+ddDelt)+s*g*ux_)
 
 end subroutine bushing_ForceAndTangent 
 

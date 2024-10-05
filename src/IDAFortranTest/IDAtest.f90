@@ -4,6 +4,7 @@ use, intrinsic :: iso_c_binding
 use fsundials_core_mod
 use fida_mod
 use fnvector_serial_mod
+use fsunnonlinsol_newton_mod
 
 use BushingDynamics
 
@@ -35,6 +36,7 @@ real(kind=8), dimension(neq) :: y, yp
 real(kind=8), parameter :: rtol = 1.d-6
 real(kind=8), dimension(neq) :: atol = (/1.d-8, 1.d-8, 1.d-8, 1.d-8/)
 real(kind=8) :: t0 = 0.d0
+real(kind=8) :: tout, tret(1)
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 ! SUNDIALS stuff
@@ -45,6 +47,7 @@ type(N_Vector), pointer :: sunvec_atol
 type(c_ptr) :: ida_mem 
 type(SUNLinearSolver), pointer :: linsolver
 type(SUNMatrix), pointer :: amat ! not used since using custom linear solver
+type(SUNNonlinearSolver), pointer :: NLS
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 ! Initialize bushing object
@@ -78,11 +81,21 @@ call bushing_MatrixEmbeddedLS(ida_mem, sunctx, linsolver)
 nullify(amat)
 retval = FIDASetLinearSolver(ida_mem, linsolver, amat)
 
+! Step 5 - Create and set nonlinear solver (Newton is used by default, so
+!          not necessary to do this
+NLS => FSUNNonlinSol_Newton(sunvec_y, sunctx)
+retval = FIDASetNonlinearSolver(ida_mem, NLS)
+
+! Step 6 - Take one step
+tout = 0.01d0
+retval = FIDASolve(ida_mem, tout, tret, sunvec_y, sunvec_yp, IDA_NORMAL)
+
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 ! Start cleanup
 call bushing_destroy(bush)
 
 call FIDAFree(ida_mem)
+retval = FSUNNonlinSolFree(NLS)
 retval = FSUNLinSolFree(linsolver)
 call FN_VDestroy(sunvec_y)
 call FN_VDestroy(sunvec_yp)
