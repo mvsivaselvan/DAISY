@@ -1,0 +1,84 @@
+\documentclass{article}
+
+\usepackage{mathtools, amssymb, amsxtra}
+
+\newcommand{\kv}{k_\text{v}}
+\newcommand{\kr}{k_\text{r}}
+\newcommand{\cv}{c_\text{v}}
+\newcommand{\crr}{c_\text{r}}
+
+\title{Pendulum dynamics with horizontal and vertical excitation}
+\author{M.~V.~Sivaselvan, \texttt{mvs@buffalo.edu}}
+\date{Oct 4, 2024}
+
+\begin{document}
+
+\maketitle
+
+The following describes the dynamics of a pendulum (a rigid body) with both 
+horizontal and vertical accelerations applied at the support.
+This is a model for problems of much larger dimension I am interested in.
+We use the state vector
+\begin{equation*}
+    \begin{aligned}
+        x_1 &= \Delta\; \text{: vertical displacement} \\
+        x_2 &= \theta\; \text{: rotation} \\
+        x_3 &= \dot{\Delta} \\
+        x_4 &= \dot{\theta}
+    \end{aligned}
+\end{equation*}
+to describe the dynamics. The input accelerations in the horizontal and vertical 
+directions are $u_x$ and $u_z$. The differential equation of motion is
+\begin{equation*}
+    \begin{aligned}
+        m\ddot{\Delta} -m h \sin(\theta)\ddot{\theta} 
+            -m h \cos(\theta) \dot{\theta}^2 + \kv\Delta + m g (1+u_z(t)) + \cv\dot{\Delta} &= 0\\
+        -m h \sin(\theta)\ddot{\Delta} + I\ddot{\theta}
+            + \kr\theta - m g (1+u_z(t)) h \sin(\theta) 
+            + m g u_x(t) h \cos(\theta) + \crr\dot{\theta} &= 0
+    \end{aligned}
+\end{equation*}
+Abbreviate these two equations as
+\begin{equation*}
+    F\left(t,
+           \begin{pmatrix}\Delta \\ \theta\end{pmatrix},
+           \begin{pmatrix}\dot{\Delta} \\ \dot{\theta}\end{pmatrix},
+           \begin{pmatrix}\ddot{\Delta} \\ \ddot{\theta}\end{pmatrix}
+           \right) = 0
+\end{equation*}
+The residual for IDA is 
+\begin{equation*}
+    \text{res}(t,x,\dot{x}) = \begin{pmatrix} 
+                                  \dot{x}(1:2) - x(3:4) \\
+                                  F\left(t,x(1:2),x(3:4),\dot{x}(3:4)\right)
+                              \end{pmatrix}
+\end{equation*}
+The Jabobian of the residual contains the matrices
+\begin{equation*}
+    M = \begin{bmatrix} 
+            \frac{\partial F_1}{\partial \ddot{\Delta}} &
+            \frac{\partial F_1}{\partial \ddot{\theta}} \\[0.5em]
+            \frac{\partial F_2}{\partial \ddot{\Delta}} &
+            \frac{\partial F_2}{\partial \ddot{\theta}}
+        \end{bmatrix}; \quad
+    C = \begin{bmatrix} 
+            \frac{\partial F_1}{\partial \dot{\Delta}} &
+            \frac{\partial F_1}{\partial \dot{\theta}} \\[0.5em]
+            \frac{\partial F_2}{\partial \dot{\Delta}} &
+            \frac{\partial F_2}{\partial \dot{\theta}}
+        \end{bmatrix}; \quad
+    K = \begin{bmatrix} 
+            \frac{\partial F_1}{\partial \Delta} &
+            \frac{\partial F_1}{\partial \theta} \\[0.5em]
+            \frac{\partial F_2}{\partial \Delta} &
+            \frac{\partial F_2}{\partial \theta}
+        \end{bmatrix}
+\end{equation*}
+Solving a linear equation with the Jacobian reduces to solving a linear equation 
+with the matrix
+\begin{equation*}
+    c_j^2 M + c_j C + K
+\end{equation*}
+which has a sparse structure corresponding to a finite element stiffness matrix,
+hence my interest in using a custom linear solver with IDA.
+\end{document}
