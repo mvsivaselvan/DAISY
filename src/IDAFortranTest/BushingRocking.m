@@ -16,5 +16,5 @@ end
 
 zdot = zeros(2,1);
 zdot(1) = z(2);
-zdot(2) = (-kr*z(1)-cr*z(2)+m*(g+uz_)*h*sin(z(1)+thet0)...
-           -m*h*ux_*cos(z(1)+thet0))/II;
+zdot(2) = (-kr*z(1)-cr*z(2)+m*g*(1+uz_)*h*sin(z(1)+thet0)...
+           -m*g*h*ux_*cos(z(1)+thet0))/II;

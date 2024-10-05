@@ -1,0 +1,9 @@
+*.aux
+*.pdf
+*.ps
+*.bbl
+*.blg
+*.dvi
+*.log
+*.synctex
+*.asv
