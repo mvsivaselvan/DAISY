@@ -25,8 +25,8 @@ if 1
 end
 
 eqdata = load('eqdata.dat');
-ux = -eqdata(:,1);
-uz = -eqdata(:,3);
+ux = eqdata(:,1);
+uz = eqdata(:,3);
 dtsample = 1/256;
 
 coupling = @(t,x)(BushingDynamics(t,x,m,II,kv,kr,cv,cr,h,...
@@ -93,6 +93,11 @@ T3 = (0:length(ux)-1)'*dtsample;
 X3 = lsim(bushingLin, [ux uz], T3);
 X3 = interp1(T3, X3, T2);
 
+fprintf('Loading IDA output ...\n')
+load('idaout.dat');
+T5 = idaout(:,1);
+X5 = idaout(:,2:5);
+
 fprintf('Max absolute value of theta in the coupled case = %g\n',...
         max(abs(X1(:,2)-theti)));
 
@@ -101,11 +106,12 @@ fprintf('amplification = %g\n',...
 
 figure(100),
     plot(T1, (X1(:,2)-theti)*kr, T4, (X4(:,2)-theti)*kr, ...
+         T5, (X5(:,2)-theti)*kr, ...
          T2, (X2(:,1)-theti)*kr, T2, X3(:,2)*kr),
     grid on,
     xlabel('Time (s)'),
     ylabel('Base moment (lb-in)'),
-    hlegend = legend('w/ coupling ode45','w/ coupling ode15i',...
+    hlegend = legend('w/ coupling ode45','w/ coupling ode15i', 'IDA', ...
                      'w/o coupling','linearized','location','northwest');
     set(gca, 'fontsize', 12, 'ylim', [-1.2 1.2]*1e5, 'ytick', [-1.2:0.2:1.2]*1e5)
     set(hlegend, 'fontsize', 12)

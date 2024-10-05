@@ -287,13 +287,11 @@ F(1) = Mmat(1,1)*ddDelt + Mmat(1,2)*ddthet &
      - this%m*this%h*c*dthet**2.d0 &
      + this%kv*Delt &
      + this%m*g*(1.d0+uz_) &
-     + this%cv*dDelt &
-     + Mmat(1,1)*yp(3) + Mmat(1,2)*yp(4)
+     + this%cv*dDelt
 F(2) = Mmat(2,1)*ddDelt + Mmat(2,2)*ddthet &
      + this%kr*thet &
      + this%m*this%h*g*(-(1.d0+uz_)*s+ux_*c) &
-     + this%cr*dthet &
-     + Mmat(2,1)*yp(3) + Mmat(2,2)*yp(4)
+     + this%cr*dthet
 
 Cmat(1,1) = this%cv
 Cmat(1,2) = -2.d0*this%m*this%h*c*dthet

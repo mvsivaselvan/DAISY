@@ -87,8 +87,16 @@ NLS => FSUNNonlinSol_Newton(sunvec_y, sunctx)
 retval = FIDASetNonlinearSolver(ida_mem, NLS)
 
 ! Step 6 - Take one step
-tout = 0.01d0
-retval = FIDASolve(ida_mem, tout, tret, sunvec_y, sunvec_yp, IDA_NORMAL)
+open(unit=100, file='idaout.dat', status='unknown')
+tout = 0.d0
+write(100,'(9e13.5)')tout,y(1:4),yp(1:4)
+do while (tout<=50.d0)
+    tout = tout + 0.01d0
+    retval = FIDASolve(ida_mem, tout, tret, sunvec_y, sunvec_yp, IDA_NORMAL)
+    write(100,'(9e13.5)')tout,y(1:4),yp(1:4)
+    print*,tout
+enddo
+close(unit=100)
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 ! Start cleanup
