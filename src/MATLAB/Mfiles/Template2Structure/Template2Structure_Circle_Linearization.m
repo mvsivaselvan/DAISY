@@ -94,11 +94,19 @@ fprintf('Top coordinate of SA is [%g;%g;%g] \n', xTop_SA)
 h_B = 91; % in 
 hc_B = 20; % in 
 m_B = 2.41; % lb-s^2/in
-II_B = [4190 0.003*4190 0.003*4190; 0.003*4190 4010 0.003*4190; ...
+bushing_stiffened = true;
+if (bushing_stiffened)
+    II_B = [4190 0.003*4190 0.003*4190; 0.003*4190 4010 0.003*4190; ...
         0.003*4190 0.003*4190 1]; % lb-s^2/in in^2
-kz_B = 39900; % lb/in
-krx_B = 7530000; % lb-in/rad
-kry_B = 5600000; % lb-in/rad
+    kz_B = 39900; % lb/in
+    krx_B = 7530000; % lb-in/rad
+    kry_B = 5600000; % lb-in/rad
+else
+    II_B = diag([4580 4580 1]); % lb-s^2/in in^2
+    kz_B = 6950; % lb/in
+    krx_B = 2730000; % lb-in/rad
+    kry_B = 2880000; % lb-in/rad
+end
 KT_B = [1 0 0; 0 1 0; 0 0 kz_B];
 KR_B = [krx_B 0 0; 0 kry_B 0; 0 0 1];
 zetav_B = 0.004; % damping ratio for vertical motion
@@ -836,6 +844,14 @@ figure(107),
     ylabel('z_{B} (in)')
     title('z displacment of bushing top (in)')
 
+% Conductor terminal forces
+figure(301),
+    plot(T, Fc([1 4],:)'),
+    grid on,
+    xlabel('Time (sec)'),
+    ylabel('Force (lb)'),
+    title('Conductor terminal forces')
+
 % obtain axial strain and curvatures for conductor
 [eps, eps_projected, kappa, Curv0, Curv] ...
                          = CableStrains(P0, P, varTheta, ...
@@ -857,12 +873,12 @@ Xplin = Xlin*AA' + U*BB'; % The transpose is because of the row-wise
                           % arrangement of Xlin and U
 toc
 Ndof = size(X,2)/2;
-figure, 
+figure(201), 
     plot(T, X(:,1), Tlin, Xlin(:,1)), 
     grid on,
     title('Comparing X(1) between nonlinear and linear analysis')
     
-figure,
+figure(202),
     plot(T, Xp(:,Ndof+1), Tlin, Xplin(:,Ndof+1)),
     grid on,
     title('Comparing first comp. of accel. between linear and nonlinear');
