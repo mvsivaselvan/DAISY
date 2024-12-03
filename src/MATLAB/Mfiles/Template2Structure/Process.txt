@@ -8,10 +8,9 @@ STEP 2: Create bushing model and do static analysis under self weight - same as 
 STEP 3: Create conductor model, and adjust the ends to obtain the end positions of the structure tops and rotation = 0 (flat). 
 	a. This is the same as what is in designTemplate2, but the end positions now corresponding to the tops of the structures
 	b. To start with, let's use the full length of the cable, but later, we must find a way to introduce desired slacks
-	
-STEP 4: Introduce rigid offsets - change the end coordinates, so that they correspond to the joint coordinates of the structures - run another static analysis, but this should converge in one or two iterations, since the shape is already correct
+	c. Introduce rigid offsets - change the end coordinates, so that they correspond to the joint coordinates of the structures - run another static analysis, but this should converge in one or two iterations, since the shape is already correct
 
-STEP 5: This is where we put the two structures and the cable together
+STEP 4: This is where we put the two structures and the cable together
 	a. Number degrees of freedom - there are two types of degrees of freedom: I) joint degrees of freedom (translation and rotation) nad II) element degrees of freedom (to represent all the internal DOF of the spline-based cable.
 	b.  joint 1 (SA) - 6 DOF numbered 0,0,0,1,2,0
 		joint 2 (bushing) = 6 DOF numbered 0,0,3,4,5,0
@@ -21,6 +20,6 @@ STEP 5: This is where we put the two structures and the cable together
 			Note: DOF 6, 7 correspond to gamm1 and gamm2, 8...10 correspond to p^3 etc.
 	c. For now, let's do the above numbering manually, and we be assemble matrices below, we'll do SA, bushing and cable explicitly. Later, we can think of automating this.
 	
-STEP 6: Perform static analysis of the structure - same process as for the cable, but now force vectors and matrices for the 3 elements are computed and assembled using the DOF numbering above. Code from simpleFEA used in CIE514 can be used for the assembly part. 
+STEP 5: Perform static analysis of the structure - same process as for the cable, but now force vectors and matrices for the 3 elements are computed and assembled using the DOF numbering above. Code from simpleFEA used in CIE514 can be used for the assembly part. 
 	a. We should again see quadratic convergence
 	b. We should also see a deformed shape in which the structures are pushed outward (it may also be useful to develop a way to plot the deformed shape, this is in the version of the code we were using with Yushan).
