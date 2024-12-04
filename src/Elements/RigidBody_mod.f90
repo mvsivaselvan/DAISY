@@ -1,10 +1,10 @@
-module RigidBodyElement
+module RigidBody_mod
 
 use emxArray
 
 implicit none
 
-type :: RigidBody
+type :: RigidBody_t
     !--------------------------------------------------------------
     ! GEOMETRY
     !--------------------------------------------------------------
@@ -30,7 +30,7 @@ type :: RigidBody
     real(kind=8), dimension(6) :: F ! Force
     real(kind=8), dimension(36) :: M, C, K
     real(kind=8), dimension(18) :: B
-end type RigidBody
+end type RigidBody_t
 
 contains
 
@@ -40,7 +40,7 @@ subroutine rigidbody_setup(this, x0, RJ, rr,&
                            mass, II, KT, KR, &
                            alph_m, bet_KT, alph_II, bet_KR)
 
-type (RigidBody), intent(out) :: this
+type (RigidBody_t), intent(out) :: this
 real(kind=8), dimension(3), intent(in) :: x0, rr
 real(kind=8), dimension(9), intent(in) :: RJ
 real(kind=8), intent(in) :: mass
@@ -71,7 +71,7 @@ end subroutine rigidbody_setup
 
 subroutine rigidbody_destroy(this)
 
-type(RigidBody), intent(out) :: this
+type(RigidBody_t), intent(out) :: this
 
 end subroutine rigidbody_destroy
 
@@ -81,7 +81,7 @@ subroutine rigidbody_setState(this, dyn, u, x, xd, xdd)
 
 use MATLABelements, only : RigidBodyForce
 
-type(RigidBody), intent(out) :: this
+type(RigidBody_t), intent(out) :: this
 integer, intent(in) :: dyn
 real(kind=8), dimension(3), intent(in) :: u
 real(kind=8), dimension(:), intent(in) :: x
@@ -110,5 +110,5 @@ end subroutine rigidbody_setState
 
 !--------------------------------------------------------
 
-end module RigidBodyElement
+end module RigidBody_mod
     

@@ -1,10 +1,10 @@
-module CableElement
+module Cable_mod
 
 use emxArray
 
 implicit none
 
-type :: Cable
+type :: Cable_t
     !--------------------------------------------------------------
     ! GEOMETRY
     !--------------------------------------------------------------
@@ -59,7 +59,7 @@ type :: Cable
     
     type(emxArray_1d_wrapper) :: Fb
     type(emxArray_2d_wrapper) :: Kb, Cb, Mb, Bb
-end type Cable
+end type Cable_t
 
 contains
 
@@ -74,7 +74,7 @@ use GaussQuad
 use BSpline
 use MATLABelements, only: SplineApproximation, getBishopFrame, CableMbar
 
-type(Cable), intent(out) :: this
+type(Cable_t), intent(out) :: this
 
 real(kind=8), dimension(3), intent(in) :: x01, r1, x02, r2
 real(kind=8), dimension(9), intent(in) :: RJ1, RE1, RJ2, RE2
@@ -238,7 +238,7 @@ end subroutine cable_setup
 
 subroutine cable_destroy(this)
 
-type(Cable), intent(out) :: this
+type(Cable_t), intent(out) :: this
 
 call emxArray_1d_destroy(this%knots)
 call emxArray_1d_destroy(this%xg)
@@ -272,7 +272,7 @@ subroutine cable_setState(this, dyn, u, x, xd, xdd)
 
 use MATLABelements, only : CableForceRotBCinCoord
 
-type(Cable), intent(out) :: this
+type(Cable_t), intent(out) :: this
 integer, intent(in) :: dyn
 real(kind=8), dimension(3), intent(in) :: u
 real(kind=8), dimension(:), intent(in) :: x
@@ -336,7 +336,7 @@ subroutine cable_getShape(this, npts, shpe)
 use BSpline
 use MATLABelements, only : getCableDeformedShape
 
-type(Cable), intent(in) :: this
+type(Cable_t), intent(in) :: this
 integer, intent(in) :: npts ! number of points in shaps
 real(kind=8), dimension(:,:), intent(out) :: shpe
 
@@ -451,4 +451,4 @@ end subroutine PiecewiseLinearCurve
 
 !--------------------------------------------------------
     
-end module CableElement
+end module Cable_mod

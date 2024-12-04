@@ -3,7 +3,7 @@ program main
 use blas95
 use lapack95
 use flib_dom
-use CableElement
+use Cable_mod
     
 implicit none
 
@@ -37,7 +37,7 @@ real(kind=8), dimension(3,3) :: II
 real(kind=c_double), dimension(3) :: x01, r1, x02, r2
 real(kind=c_double), dimension(9) :: RJ1, RE1, RJ2, RE2
 
-type(Cable) :: cable1
+type(Cable_t) :: cable1
 
 real(kind=8), dimension(:), allocatable :: x ! displacement
 real(kind=8), dimension(:), allocatable :: x_ ! displacement during line search
