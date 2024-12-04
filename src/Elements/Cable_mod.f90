@@ -65,10 +65,10 @@ contains
 
 !--------------------------------------------------------
 
-subroutine cable_setup(this, &
-                       x01, RJ1, RE1, r1, x02, RJ2, RE2, r2, &
-                       N, d, dbrev, dbar, Ng, refGeom, &
-                       rho, EI, EA, GJ, betBEND, betAX, betTOR, alph0, II)
+subroutine make_cable(this, &
+                      x01, RJ1, RE1, r1, x02, RJ2, RE2, r2, &
+                      N, d, dbrev, dbar, Ng, refGeom, &
+                      rho, EI, EA, GJ, betBEND, betAX, betTOR, alph0, II)
 
 use GaussQuad
 use BSpline
@@ -232,11 +232,11 @@ call emxArray_2d_create(this%Cb, nDof, nDof)
 call emxArray_2d_create(this%Mb, nDof, nDof)
 call emxArray_2d_create(this%Bb, nDof, 3)
 
-end subroutine cable_setup
+end subroutine make_cable
     
 !--------------------------------------------------------
 
-subroutine cable_destroy(this)
+subroutine destroy_cable(this)
 
 type(Cable_t), intent(out) :: this
 
@@ -264,11 +264,11 @@ call emxArray_2d_destroy(this%Cb)
 call emxArray_2d_destroy(this%Mb)
 call emxArray_2d_destroy(this%Bb)
 
-end subroutine cable_destroy
+end subroutine destroy_cable
                        
 !--------------------------------------------------------
 
-subroutine cable_setState(this, dyn, u, x, xd, xdd)
+subroutine setState_cable(this, dyn, u, x, xd, xdd)
 
 use MATLABelements, only : CableForceRotBCinCoord
 
@@ -327,7 +327,7 @@ call CableForceRotBCinCoord &
          this%Mbar%emx, u, this%Kbar11%emx, this%Dbar11%emx, real(dyn,8), this%alph0, &
          this%Fb%emx, this%Kb%emx, this%Cb%emx, this%Mb%emx, this%Bb%emx)
 
-end subroutine cable_setState
+end subroutine setState_cable
 
 !--------------------------------------------------------
 

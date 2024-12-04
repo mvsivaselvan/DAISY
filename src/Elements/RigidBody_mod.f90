@@ -36,7 +36,7 @@ contains
 
 !--------------------------------------------------------
 
-subroutine rigidbody_setup(this, x0, RJ, rr,&
+subroutine make_rigidbody(this, x0, RJ, rr,&
                            mass, II, KT, KR, &
                            alph_m, bet_KT, alph_II, bet_KR)
 
@@ -65,19 +65,19 @@ this%CT(5) = alph_m*mass
 this%CT(9) = alph_m*mass
 this%CR = alph_II*II + bet_KR*KR
 
-end subroutine rigidbody_setup
+end subroutine make_rigidbody
 
 !--------------------------------------------------------
 
-subroutine rigidbody_destroy(this)
+subroutine destroy_rigidbody(this)
 
 type(RigidBody_t), intent(out) :: this
 
-end subroutine rigidbody_destroy
+end subroutine destroy_rigidbody
 
 !--------------------------------------------------------
 
-subroutine rigidbody_setState(this, dyn, u, x, xd, xdd)
+subroutine setState_rigidbody(this, dyn, u, x, xd, xdd)
 
 use MATLABelements, only : RigidBodyForce
 
@@ -106,7 +106,7 @@ call RigidBodyForce(this%d, this%phi, &
                     this%rr, this%RJ, u, &
                     this%F, this%K, this%C, this%M, this%B)
 
-end subroutine rigidbody_setState
+end subroutine setState_rigidbody
 
 !--------------------------------------------------------
 

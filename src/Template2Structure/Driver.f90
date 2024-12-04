@@ -153,7 +153,7 @@ RE2 = (/1.d0, 0.d0, 0.d0, 0.d0, 1.d0, 0.d0, 0.d0, 0.d0, 1.d0/)
 r2 = (/0.d0, 0.d0, 0.d0/)
 
 ! Set up cable
-call cable_setup(cable1, x01, RJ1, RE1, r1, x02, RJ2, RE2, r2, &
+call make_cable(cable1, x01, RJ1, RE1, r1, x02, RJ2, RE2, r2, &
                  N, d, dbrev, dbar, Ng, refGeom, &
                  rho, EI, EA, GJ, betBEND, betAX, betTOR, alph0, II)
 print*,'Cable created.'
@@ -185,7 +185,7 @@ allocate(gk_(nDof))
 allocate(Dg(nDof,nDof))
 allocate(ipiv(nDof))
 do k = 1, 200
-    call cable_setState(cable1, 0, u, x)
+    call setState_cable(cable1, 0, u, x)
     
     gk = [cable1%Fb%data_(7), cable1%Fb%data_(14:nDof+6)]
     normgk = nrm2(gk)
@@ -200,7 +200,7 @@ do k = 1, 200
         x_(1:6) = x(1:6)
         x_(8:13) = x(8:13)
         x_([7,14:nDof+6]) = x([7,14:nDof+6]) + armijo_alpha*Dx
-        call cable_setState(cable1, 0, u, x_)
+        call setState_cable(cable1, 0, u, x_)
         gk_ = [cable1%Fb%data_(7), cable1%Fb%data_(14:nDof+6)]
         if (0.5d0*nrm2(gk_)**2.d0 <= (0.5d0 - armijo_alpha*armijo_c1)*normgk**2.d0) exit
         armijo_alpha = armijo_alpha*armijo_gamm;
@@ -227,7 +227,7 @@ enddo
 close(unit=100)
 
 ! Destroy cable
-call cable_destroy(cable1)
+call destroy_cable(cable1)
 deallocate(x)
 deallocate(x_)
 print*,'Cable destroyed.'
