@@ -21,7 +21,7 @@ end type Element_t
 abstract interface
     subroutine setState_element(this, dyn, u, x, xd, xdd)
         import :: Element_t
-        class(Element_t), intent(out) :: this
+        class(Element_t), intent(inout) :: this
         integer, intent(in) :: dyn
         real(kind=8), dimension(3), intent(in) :: u
         real(kind=8), dimension(:), intent(in) :: x
@@ -29,6 +29,9 @@ abstract interface
     end subroutine setState_element
 end interface
 
+type ElementPointer_t
+    class(Element_t), pointer :: ptr
+end type ElementPointer_t
 
 contains
 

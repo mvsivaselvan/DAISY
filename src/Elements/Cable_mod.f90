@@ -1,10 +1,11 @@
 module Cable_mod
 
 use emxArray
+use Element_mod, only : Element_t
 
 implicit none
 
-type :: Cable_t
+type, extends(Element_t) :: Cable_t
     !--------------------------------------------------------------
     ! GEOMETRY
     !--------------------------------------------------------------
@@ -59,6 +60,10 @@ type :: Cable_t
     
     type(emxArray_1d_wrapper) :: Fb
     type(emxArray_2d_wrapper) :: Kb, Cb, Mb, Bb
+contains
+    procedure :: Cable_t => make_cable
+    procedure :: destroy_cable
+    procedure :: setState => setState_cable
 end type Cable_t
 
 contains
@@ -74,7 +79,7 @@ use GaussQuad
 use BSpline
 use MATLABelements, only: SplineApproximation, getBishopFrame, CableMbar
 
-type(Cable_t), intent(out) :: this
+class(Cable_t), intent(out) :: this
 
 real(kind=8), dimension(3), intent(in) :: x01, r1, x02, r2
 real(kind=8), dimension(9), intent(in) :: RJ1, RE1, RJ2, RE2
@@ -238,7 +243,7 @@ end subroutine make_cable
 
 subroutine destroy_cable(this)
 
-type(Cable_t), intent(out) :: this
+class(Cable_t), intent(out) :: this
 
 call emxArray_1d_destroy(this%knots)
 call emxArray_1d_destroy(this%xg)
@@ -272,7 +277,7 @@ subroutine setState_cable(this, dyn, u, x, xd, xdd)
 
 use MATLABelements, only : CableForceRotBCinCoord
 
-type(Cable_t), intent(out) :: this
+class(Cable_t), intent(inout) :: this
 integer, intent(in) :: dyn
 real(kind=8), dimension(3), intent(in) :: u
 real(kind=8), dimension(:), intent(in) :: x
