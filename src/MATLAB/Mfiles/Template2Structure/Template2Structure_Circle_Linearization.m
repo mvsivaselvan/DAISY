@@ -199,10 +199,10 @@ L = span + slack; % length
 curvangle = pi/3;
 R = L/curvangle; % want a 60-degree arc
 curve_gamm = @(s)myCircle(s,R,-pi/2-curvangle/2,-pi/2+curvangle/2);
-refGeom = curve_gamm(linspace(0,1,101));
+refGeom = curve_gamm(linspace(0,1,101)); % translate start end to origin
+refGeom = refGeom - refGeom(:,1); 
 [gamm_, J_] = piecewiseLinearCurve(refGeom',[0;sg;1]);
 [P0, ~] = SplineApproximation(gamm_, J_, N, sg, wg, colmat);
-P0 = P0 - P0(:,1); % translate start end to origin
 R0 = getBishopFrame(P0, knots, d, [0; sg; 1]);
 
 % Conductor properties
