@@ -37,19 +37,21 @@ contains
 
 !--------------------------------------------------------
 
-subroutine make_element(this, ID, numNodes, nodeIDlist, numEqs)
+subroutine make_element(this, ID, numNodes, nodeIDlist, numEqs, active)
 
 class(Element_t), intent(out) :: this
 integer(kind=4), intent(in) :: ID
 integer(kind=4), intent(in) :: numNodes
 integer(kind=4), dimension(:), intent(in) :: nodeIDlist
 integer(kind=4), intent(in) :: numEqs
+logical, intent(in) :: active
 
 this%ID = ID
 this%numNodes = numNodes
 allocate(this%nodes(numNodes))
 this%numEqs = numEqs
 allocate(this%equationNumber(numEqs))
+this%active = active
 
 end subroutine make_element
     
