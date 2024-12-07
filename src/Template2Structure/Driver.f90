@@ -3,7 +3,9 @@ program main
 use blas95
 use lapack95
 use flib_dom
+
 use Cable_mod
+use Domain_mod
     
 implicit none
 
@@ -76,6 +78,8 @@ character(20) :: attribString
 character(20) :: defgeomFile
 
 real(kind=8) :: endpositionX
+
+call make_domain
 
 call getarg(1, inpFilename, cmdLineStatus)
 
@@ -159,6 +163,10 @@ call make_cable(cable1, x01, RJ1, RE1, r1, x02, RJ2, RE2, r2, &
                  rho, EI, EA, GJ, betBEND, betAX, betTOR, alph0, II)
 print*,'Cable created.'
 
+cable1%Element_t%ID = 1001
+call add_element_to_domain(cable1)
+print*,'Cable added to domain.'
+
 ! A trial displacement
 nDof = 3*cable1%N + cable1%Nbrev - 6 ! since the ends are fixed
 allocate(x(nDof+6))
@@ -233,6 +241,8 @@ deallocate(cable1)
 deallocate(x)
 deallocate(x_)
 print*,'Cable destroyed.'
+
+call destroy_domain
 
 !! Write Fb and Kb to files
 !open(file='Fb.dat', unit=100, status='unknown')

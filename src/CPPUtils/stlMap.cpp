@@ -11,88 +11,71 @@
 #define MAP map<ID_TYPE,void *>
 #define ITERATOR MAP::iterator
 
-typedef struct {
-	void *ptr;
-} POINTER_TO_POINTER;
-
 using namespace std;
 
-extern "C" PTR_TYPE CREATE_MAP();
-extern "C" void DELETE_MAP(PTR_TYPE *mapint);
-extern "C" void ADD_TO_MAP(PTR_TYPE *mapint, ID_TYPE *key, void *val);
-extern "C" void REMOVE_FROM_MAP(PTR_TYPE *mapint, ID_TYPE *key);
-extern "C" void GET_VAL_FOR_KEY(PTR_TYPE *mapint, ID_TYPE *key, POINTER_TO_POINTER *valptr);
-extern "C" PTR_TYPE GET_BEGIN_ITERATOR(PTR_TYPE *mapint);
-extern "C" PTR_TYPE GET_END_ITERATOR(PTR_TYPE *mapint);
-extern "C" void ITERATE_NEXT(PTR_TYPE *iterint);
-extern "C" void GET_VALUE_FOR_ITERATOR(PTR_TYPE *iterint, POINTER_TO_POINTER *valptr);
-extern "C" bool COMPARE_ITERATORS(PTR_TYPE *iter1int, PTR_TYPE *iter2int);
-extern "C" void DELETE_ITERATOR(PTR_TYPE *iterint);
+extern "C" MAP* CREATE_MAP();
+extern "C" void DELETE_MAP(MAP *mapptr);
+extern "C" void ADD_TO_MAP(MAP *mapptr, ID_TYPE key, void *val);
+extern "C" void REMOVE_FROM_MAP(MAP *mapptr, ID_TYPE key);
+extern "C" void* GET_VAL_FOR_KEY(MAP *mapptr, ID_TYPE key);
+extern "C" ITERATOR* GET_BEGIN_ITERATOR(MAP *mapptr);
+extern "C" ITERATOR* GET_END_ITERATOR(MAP *mapptr);
+extern "C" void ITERATE_NEXT(ITERATOR *iterptr);
+extern "C" void* GET_VALUE_FOR_ITERATOR(ITERATOR *iterptr);
+extern "C" bool COMPARE_ITERATORS(ITERATOR *iter1ptr, ITERATOR *iter2ptr);
+extern "C" void DELETE_ITERATOR(ITERATOR *iterptr);
 
-PTR_TYPE CREATE_MAP()
+MAP* CREATE_MAP()
 {
-	return reinterpret_cast<PTR_TYPE>(new MAP());
+	return new MAP();
 }
 
-void DELETE_MAP(PTR_TYPE *mapint)
+void DELETE_MAP(MAP *mapptr)
 {
-	MAP *mapptr = reinterpret_cast<MAP*>(*mapint);
-	delete mapptr;
+	if (mapptr != NULL) delete mapptr;
 }
 
-void ADD_TO_MAP(PTR_TYPE *mapint, ID_TYPE *key, void *val)
+void ADD_TO_MAP(MAP *mapptr, ID_TYPE key, void *val)
 {
-	MAP *mapptr = reinterpret_cast<MAP*>(*mapint);
-	mapptr->insert(pair<ID_TYPE,void *>(*key,val));
+	mapptr->insert(pair<ID_TYPE,void *>(key,val));
 }
 
-void REMOVE_FROM_MAP(PTR_TYPE *mapint, ID_TYPE *key)
+void REMOVE_FROM_MAP(MAP *mapptr, ID_TYPE key)
 {
-	MAP *mapptr = reinterpret_cast<MAP*>(*mapint);
-	mapptr->erase(*key);
+	mapptr->erase(key);
 }
 
-void GET_VAL_FOR_KEY(PTR_TYPE *mapint, ID_TYPE *key, POINTER_TO_POINTER *valptr)
+void* GET_VAL_FOR_KEY(MAP *mapptr, ID_TYPE key)
 { 
-	MAP *mapptr = reinterpret_cast<MAP*>(*mapint);
-	valptr->ptr = (*mapptr)[*key];
+	return (void *)((*mapptr)[key]);
 }
 
-PTR_TYPE GET_BEGIN_ITERATOR(PTR_TYPE *mapint)
+ITERATOR* GET_BEGIN_ITERATOR(MAP *mapptr)
 {
-	MAP *mapptr = reinterpret_cast<MAP*>(*mapint);
-	ITERATOR *begin = new ITERATOR(mapptr->begin());
-	return reinterpret_cast<PTR_TYPE>(begin);
+	return new ITERATOR(mapptr->begin());
 }
 
-PTR_TYPE GET_END_ITERATOR(PTR_TYPE *mapint)
+ITERATOR* GET_END_ITERATOR(MAP *mapptr)
 {
-	MAP *mapptr = reinterpret_cast<MAP*>(*mapint);
-	ITERATOR *end = new ITERATOR(mapptr->end());
-	return reinterpret_cast<PTR_TYPE>(end);
+	return new ITERATOR(mapptr->end());
 }
 
-void ITERATE_NEXT(PTR_TYPE *iterint)
+void ITERATE_NEXT(ITERATOR *iterptr)
 {
-	ITERATOR *iterptr = reinterpret_cast<ITERATOR*>(*iterint);
 	++(*iterptr);
 }
 
-extern "C" void GET_VALUE_FOR_ITERATOR(PTR_TYPE *iterint, POINTER_TO_POINTER *valptr)
+extern "C" void* GET_VALUE_FOR_ITERATOR(ITERATOR *iterptr)
 {
-	ITERATOR *iterptr = reinterpret_cast<ITERATOR*>(*iterint);
-	valptr->ptr = (*iterptr)->second;
+	return (void *)((*iterptr)->second);
 }
 
-bool COMPARE_ITERATORS(PTR_TYPE *iter1int, PTR_TYPE *iter2int)
+bool COMPARE_ITERATORS(ITERATOR *iter1ptr, ITERATOR *iter2ptr)
 {
-	ITERATOR *iter1ptr = reinterpret_cast<ITERATOR*>(*iter1int);
-	ITERATOR *iter2ptr = reinterpret_cast<ITERATOR*>(*iter2int);
 	return (*iter1ptr == *iter2ptr);
 }
 
-void DELETE_ITERATOR(PTR_TYPE *iterint)
+void DELETE_ITERATOR(ITERATOR *iterptr)
 {
-	ITERATOR *iterptr = reinterpret_cast<ITERATOR*>(*iterint);
-	delete iterptr;
+	if (iterptr != NULL) delete iterptr;
 }

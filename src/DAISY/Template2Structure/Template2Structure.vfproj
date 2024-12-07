@@ -18,7 +18,7 @@
 		</Configuration>
 		<Configuration Name="Debug|x64" UseCompiler="ifxCompiler">
 			<Tool Name="VFFortranCompilerTool" SuppressStartupBanner="true" DebugInformationFormat="debugEnabled" Optimization="optimizeDisabled" AdditionalIncludeDirectories="..\FortranInterfaces\x64\Debug;..\SplineLib\x64\Debug;..\ElementsLib\x64\Debug;..\CoreLib\x64\Debug;C:\Program Files (x86)\Intel\oneAPI\mkl\2024.0\include\mkl\intel64\lp64;C:\Users\mvs\source\repos\xmlf90\build\dom;C:\Users\mvs\source\repos\xmlf90\build\strings" WarnInterfaces="true" Traceback="true" BoundsCheck="true" StackFrameCheck="true" RuntimeLibrary="rtMultiThreadedDebugDLL"/>
-			<Tool Name="VFLinkerTool" LinkIncremental="linkIncrementalNo" SuppressStartupBanner="true" AdditionalLibraryDirectories="..\SplineLib\x64\Debug;..\FortranInterfaces\x64\Debug;..\ElementsLib\x64\Debug;..\CoreLib\x64\Debug;..\x64\Debug;C:\Program Files (x86)\Intel\oneAPI\mkl\2024.0\include\mkl\intel64\lp64;C:\Users\mvs\source\repos\xmlf90\build\dom;C:\Users\mvs\source\repos\xmlf90\build\strings;C:\Users\mvs\source\repos\xmlf90\build\wxml;C:\Users\mvs\source\repos\xmlf90\build\sax" GenerateDebugInformation="true" SubSystem="subSystemConsole" AdditionalDependencies="FortranInterfaces.lib MATLABelementsLib.lib SplineLib.lib ElementsLib.lib CoreLib.lib mkl_blas95_lp64.lib mkl_lapack95_lp64.lib mkl_intel_lp64.lib mkl_sequential.lib mkl_core.lib dom.lib m_strings.lib wxml.lib sax.lib"/>
+			<Tool Name="VFLinkerTool" LinkIncremental="linkIncrementalNo" SuppressStartupBanner="true" AdditionalLibraryDirectories="..\SplineLib\x64\Debug;..\FortranInterfaces\x64\Debug;..\ElementsLib\x64\Debug;..\CoreLib\x64\Debug;..\CPPUtils\x64\Debug;..\x64\Debug;C:\Program Files (x86)\Intel\oneAPI\mkl\2024.0\include\mkl\intel64\lp64;C:\Users\mvs\source\repos\xmlf90\build\dom;C:\Users\mvs\source\repos\xmlf90\build\strings;C:\Users\mvs\source\repos\xmlf90\build\wxml;C:\Users\mvs\source\repos\xmlf90\build\sax" GenerateDebugInformation="true" SubSystem="subSystemConsole" AdditionalDependencies="FortranInterfaces.lib MATLABelementsLib.lib SplineLib.lib ElementsLib.lib CoreLib.lib CPPUtils.lib mkl_blas95_lp64.lib mkl_lapack95_lp64.lib mkl_intel_lp64.lib mkl_sequential.lib mkl_core.lib dom.lib m_strings.lib wxml.lib sax.lib"/>
 			<Tool Name="VFResourceCompilerTool"/>
 			<Tool Name="VFMidlTool" SuppressStartupBanner="true" TargetEnvironment="midlTargetAMD64"/>
 			<Tool Name="VFCustomBuildTool"/>
@@ -54,7 +54,8 @@
 		<Filter Name="Header Files" Filter="fi;fd;h;inc"/>
 		<Filter Name="Resource Files" Filter="rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe"/>
 		<Filter Name="Source Files" Filter="f90;for;f;fpp;ftn;def;odl;idl">
-		<File RelativePath="..\..\Template2Structure\Driver.f90"/></Filter>
+		<File RelativePath="..\..\Template2Structure\Driver.f90"/>
+		<File RelativePath="..\..\Template2Structure\XMLModelBuilder.f90"/></Filter>
 	</Files>
 	<Globals/>
 </VisualStudioProject>

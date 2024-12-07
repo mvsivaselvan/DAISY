@@ -243,7 +243,7 @@ end subroutine make_cable
 
 subroutine destroy_cable(this)
 
-class(Cable_t), intent(out) :: this
+class(Cable_t), intent(inout) :: this
 
 call emxArray_1d_destroy(this%knots)
 call emxArray_1d_destroy(this%xg)

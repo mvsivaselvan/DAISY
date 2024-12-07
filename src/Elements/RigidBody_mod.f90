@@ -71,7 +71,7 @@ end subroutine make_rigidbody
 
 subroutine destroy_rigidbody(this)
 
-type(RigidBody_t), intent(out) :: this
+type(RigidBody_t), intent(inout) :: this
 
 end subroutine destroy_rigidbody
 
