@@ -236,11 +236,11 @@ enddo
 close(unit=100)
 
 ! Destroy cable
-call destroy_cable(cable1)
+!call destroy_cable(cable1)
+!print*,'Cable destroyed.'
 deallocate(cable1)
 deallocate(x)
 deallocate(x_)
-print*,'Cable destroyed.'
 
 call destroy_domain
 

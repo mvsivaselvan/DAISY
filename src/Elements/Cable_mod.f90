@@ -62,7 +62,7 @@ type, extends(Element_t) :: Cable_t
     type(emxArray_2d_wrapper) :: Kb, Cb, Mb, Bb
 contains
     procedure :: Cable_t => make_cable
-    procedure :: destroy_cable
+    final :: destroy_cable
     procedure :: setState => setState_cable
 end type Cable_t
 
@@ -243,7 +243,7 @@ end subroutine make_cable
 
 subroutine destroy_cable(this)
 
-class(Cable_t), intent(inout) :: this
+type(Cable_t), intent(inout) :: this
 
 call emxArray_1d_destroy(this%knots)
 call emxArray_1d_destroy(this%xg)
@@ -268,6 +268,8 @@ call emxArray_2d_destroy(this%Kb)
 call emxArray_2d_destroy(this%Cb)
 call emxArray_2d_destroy(this%Mb)
 call emxArray_2d_destroy(this%Bb)
+
+print*,'Cable destroyed from destructor!'
 
 end subroutine destroy_cable
                        
