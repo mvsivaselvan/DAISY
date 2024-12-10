@@ -1,0 +1,86 @@
+ <DAISYDataSet>
+	<!-- Acceleration due to gravity in proper units (in/s^2) to apply self weight -->
+	<Gravity Value="386.4"/>
+	<!-- Node for surge arrester (SA) -->
+	<Node ID="1" X="0" Y="0" Z="0" Constraints="111001" Frame="0,0,0,0,0,0,0,0,0"\>
+	<!-- Node for bushing (B)-->
+	<Node ID="2" X="125.0" Y="0" Z="0" Constraints="110001"/>
+	<!-- Node for SA side of conductor -->
+	<Node ID="3" X="0" Y="0" Z="0" Constraints="111111"/>
+	<!-- Node for B side of conductor -->
+	<Node ID="4" X="121.2761" Y="0" Z="0" Constraints="111111"/>
+	<!-- Rigid offsets from base to terminal of SA and B -->
+	<RigidOffset ID="1" Offset="0,0,0"/> <!-- SA -->
+	<RigidOffset ID="2" Offset="0,0,0"/> <!-- B -->
+	<RigidOffset ID="3" Offset="0,0,0"/> <!-- Default 0 -->
+	<!-- Rigid body repreenting SA --->
+	<RigidBody ID="101" Nodes="1" Active="True" RigidOffsets="3" 
+		Mass="" MomentOfInertia="0,0,0,0,0,0"
+		TranslationStiffness="0,0,0,0,0,0" RotationtionStiffness="0,0,0,0,0,0"
+		alphTrans="0.0" betTrans="0.0" alphRot="0.0" betRot="0.0"/>
+	<!-- Rigid body repreenting B --->
+	<RigidBody ID="102" Nodes="2" Active"True" RigidOffsets="3" 
+		Mass="" MomentOfInertia="0,0,0,0,0,0"
+		TranslationStiffness="0,0,0,0,0,0" RotationtionStiffness="0,0,0,0,0,0"
+		alphTrans="0.0" betTrans="0.0" alphRot="0.0" betRot="0.0"/>
+	<!-- Conductor (C) -->
+	<Cable ID="1001" Nodes="3,4" Active="False" RigidOffsets="1,2">
+		<ReferenceGeometry File="refCircle.txt"/>
+		<Properties rho="3.9878e-4" EA="157e5" EI="21800" GJ="16769" betBEND="0.01" betAX="0.01" betTOR="0.01" alpha="0.0" 
+			SectionMassMomentOfInertia="9.9e-7,0,0,9.9e-7,0,1.98e-6"/>
+		<SplineParameters N="10" d="3" dtwist="2" dstrain="1" NGauss="3"/>
+	</Cable>
+	<!-- Step 1: SA and B are active, apply self weight -->
+	<Step ID="1" Type="StaticNewton" AnalysisDuration="1" AnalysisIncrement="1" SelfWeight="On"/>
+	<!-- Step 2: 
+		(1) Fix SA and B nodes - the displacements of these nodes are locked in;
+		(2)	Inactivate SA and B - the forces in these are locked in;
+		(3) Activate C
+		(3) Move C nodes to the positions of the SA and B nodes
+	-->
+	<BoundaryCondition ID="21">
+		<NodalBC ID="211" Node="1" Action="+" ConstrainedDOF="111111"/> <!-- Fix SA node -->
+		<NodalBC ID="212" Node="2" Action="+" ConstrainedDOF="111111"/> <!-- Fix B node -->
+		<!-- Move node 1 to node 3 such that all the DOF of 1 are lined up with those of 3 -->
+		<NodalBC ID="213" Node="3" Action="+" ConstrainedDOF="111111" ToNode="1"/> 
+		<!-- Move node 2 to node 4 such that all the DOF of 2 are lined up with those of 4 -->
+		<NodalBC ID="214" Node="4" Action="+" ConstrainedDOF="111111" ToNode="2"/>
+	</BoundaryCondition>
+	<ElementSet ID="21">
+		<Element ID="211" ElementID="101" Action="-"/>
+		<Element ID="212" ElementID="102" Action="-"/>
+		<Element ID="213" ElementID="1001" Action="+"/>
+	</ElementSet>
+	<Step ID="2" Type="StaticNewton" AnalysisDuration="1" AnalysisIncrement="1" SelfWeight="On"
+		BoundaryCondition="21" ElementSet="21"/>
+	<!-- Step 3:
+		(1) Constrain C nodes to SA and B nodes
+		(2) Release SA and B nodes
+		(3) Activate SA and B
+	-->
+	<DODConstraints ID="31">
+		<Constraint ID="311" Independent="1" Dependent="3" Action="+" ConstrainedDOF="111111"/>
+		<Constraint ID="312" Independent="2" Dependent="4" Action="+" ConstrainedDOF="111111"/>
+	</DOFConstraints>
+	<BoundaryCondition ID="31">
+		<NodalBC ID="311" Node="1" Action="-" ConstrainedDOF="000110"/> <!-- Fix SA node -->
+		<NodalBC ID="312" Node="2" Action="-" ConstrainedDOF="001110"/> <!-- Fix B node -->
+	</BoundaryCondition>
+	<ElementSet ID="31">
+		<Element ID="311" ElementID="101" Action="+"/>
+		<Element ID="312" ElementID="102" Action="+"/>
+	</ElementSet>
+	<Step ID="3" Type="StaticNewton" AnalysisDuration="1" AnalysisIncrement="1" SelfWeight="On"
+		BoundaryCondition="31" ElementSet="31" DOFConstraints="31"/>
+	<!-- Step 4: Perform dynamic analysis under EQ input -->
+	<BaseAccel ID="1" X="CERLX.dat" Y="CERLY.dat" Z="CERLZ.dat" TSTEP="0.02d0" SCALE="1.0"/>
+	<Step ID="4" Type="DynamicIDA" AnalysisDuration="50" AnalysisIncrement="0.01" SelfWeight="On"
+		BaseAccel="1"/>
+	<StepSequence Sequence="1,2,3,4"/>
+	<Output>
+		<NodeOutput ID="1"  Node="1" RigidOffset="1"  File="SAOut.dat"/>
+		<NodeOutput ID="2"  Node="2" RigidOffset="2"  File="BushingOut.dat"/>
+		<ElementOuput ID="3" Element="1001" File="ConductorOut.dat"/>
+	</Output>
+ </DAISYDataSet>
+ 
