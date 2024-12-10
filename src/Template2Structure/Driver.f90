@@ -4,6 +4,8 @@ use blas95
 use lapack95
 use flib_dom
 
+use XMLModelBuilder
+
 use Cable_mod
 use Domain_mod
     
@@ -89,7 +91,7 @@ domNodes => getElementsByTagName(doc,'Cable')
 cableDOMnode => item(domNodes,0)
 domNodes => getElementsByTagName(cableDOMnode,'ReferenceGeometry')
 refgeomDOMnode => item(domNodes,0)
-refgeomFile = getAttribute(refgeomDOMnode,'file')
+refgeomFile = getAttribute(refgeomDOMnode,'File')
 domNodes => getElementsByTagName(cableDOMnode,'Properties')
 propertiesDOMnode => item(domNodes,0)
 attribString = getAttribute(propertiesDOMnode,'rho')
@@ -100,23 +102,8 @@ attribString = getAttribute(propertiesDOMnode,'EI')
 EI = dnum(attribString)
 attribString = getAttribute(propertiesDOMnode,'GJ')
 GJ = dnum(attribString)
-domNodes => getElementsByTagName(propertiesDOMnode,'SectionMassMomentOfInertia')
-sectionInertiaDOMnode => item(domNodes,0)
-attribString = getAttribute(sectionInertiaDOMnode,'I11')
-II(1,1) = dnum(attribString)
-attribString = getAttribute(sectionInertiaDOMnode,'I12')
-II(1,2) = dnum(attribString)
-attribString = getAttribute(sectionInertiaDOMnode,'I13')
-II(1,3) = dnum(attribString)
-attribString = getAttribute(sectionInertiaDOMnode,'I22')
-II(2,2) = dnum(attribString)
-attribString = getAttribute(sectionInertiaDOMnode,'I23')
-II(2,3) = dnum(attribString)
-attribString = getAttribute(sectionInertiaDOMnode,'I33')
-II(3,3) = dnum(attribString)
-II(2,1) = II(1,2)
-II(3,1) = II(1,3)
-II(3,2) = II(2,3)
+attribString = getAttribute(propertiesDOMnode,'SectionMassMomentOfInertia')
+call get3x3MatrixFromString(attribString, II, .true.)
 domNodes => getElementsByTagName(cableDOMnode,'SplineParameters')
 splineparamDOMnode => item(domNodes,0)
 attribString = getAttribute(splineparamDOMnode,'N')

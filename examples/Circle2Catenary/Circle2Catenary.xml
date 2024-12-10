@@ -1,9 +1,8 @@
  <DAISYDataSet>
-	<Cable ID="100">
-		<ReferenceGeometry file="refCircle.txt"/>
-		<Properties rho="3.9878e-4" EA="157e5" EI="21800" GJ="16769" betBEND="0.01" betAX="0.01" betTOR="0.01" alpha="0.0">
-			<SectionMassMomentOfInertia I11="9.9e-7" I12="0.0" I13="0.0" I22="9.9e-7" I23="0.0" I33="1.98e-6"/>
-		</Properties>
+	<Cable ID="1001" Nodes="3,4" Active="False" RigidOffsets="1,2">
+		<ReferenceGeometry File="refCircle.txt"/>
+		<Properties rho="3.9878e-4" EA="157e5" EI="21800" GJ="16769" betBEND="0.01" betAX="0.01" betTOR="0.01" alpha="0.0" 
+			SectionMassMomentOfInertia="9.9e-7,0,0,9.9e-7,0,1.98e-6"/>
 		<SplineParameters N="10" d="3" dtwist="2" dstrain="1" NGauss="3"/>
 	</Cable>	
 	<Step ID="1" Nature="Nonlinear" Type="CableShape" GeometricNonlinear="TRUE" AnalysisDuration="1" OutputShapeFile="deformedShape.txt">
