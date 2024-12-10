@@ -1,2 +1,10 @@
+# Visual Studio related
 *.u2d
 *.user*
+*.filters
+
+# Directories containing binaries
+**/x64/
+
+# MATLAB related
+*.asv
