@@ -65,7 +65,7 @@ this%rigidoffsetIDlist = rigidoffsetIDlist
 allocate(this%offsets(numNodes))                        
 
 this%numEqs = numEqs
-allocate(this%equationNumber(numEqs))
+if (numEqs .gt. 0) allocate(this%equationNumber(numEqs))
 
 this%active = active
 

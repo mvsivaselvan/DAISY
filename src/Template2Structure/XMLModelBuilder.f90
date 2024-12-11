@@ -4,6 +4,7 @@ use flib_dom
 
 use Domain_mod
 use Cable_mod
+use RigidBody_mod
 
 implicit none
 
@@ -56,6 +57,13 @@ domNodes => getElementsByTagName(doc,"Cable")
 print*,'Processing cables ...'
 do i=0,getLength(domNodes)-1
     call processCable(item(domNodes,i))
+enddo
+
+! Rigid bodies
+domNodes => getElementsByTagName(doc,"RigidBody")
+print*,'Processing rigid bodies ...'
+do i=0,getLength(domNodes)-1
+    call processRigidBody(item(domNodes,i))
 enddo
 
 call endDomainBuild
@@ -228,6 +236,57 @@ call make_cable(cableptr, ID, nodeIDs, rigidoffsetIDs, active, &
 call add_element_to_domain(cableptr)
 
 end subroutine processCable
+    
+!-------------------------------------------------
+
+subroutine processRigidBody(domNode)
+
+type(fNode), pointer, intent(in) :: domNode
+character(50) :: attribString
+integer(kind=4) :: ID
+integer(kind=4), dimension(1) :: nodeIDs, rigidOffsetIDs
+logical :: active
+real(kind=8) :: mass, alph_m, bet_KT, alph_II, bet_KR
+real(kind=8), dimension(9) :: II, KT, KR
+type(RigidBody_t), pointer :: rigidbodyptr
+
+attribString = getAttribute(domNode, 'ID')
+ID = jnum(attribString) 
+attribString = getAttribute(domNode, 'Nodes')
+call csv2array(1, attribString, nodeIDs)
+attribString = getAttribute(domNode, 'RigidOffsets')
+call csv2array(1, attribString, rigidoffsetIDs)
+attribString = getAttribute(domNode, 'Active')
+if (attribString == "true") then
+    active = .true.
+else
+    active = .false.
+endif
+
+attribString = getAttribute(domNode, 'Mass')
+mass = dnum(attribString) 
+attribString = getAttribute(domNode, 'MomentOfInertia')
+call get3x3MatrixFromString(attribString, II, .true.)
+attribString = getAttribute(domNode, 'TranslationStiffness')
+call get3x3MatrixFromString(attribString, KT, .true.)
+attribString = getAttribute(domNode, 'RotationStiffness')
+call get3x3MatrixFromString(attribString, KR, .true.)
+attribString = getAttribute(domNode, 'alphTrans')
+alph_m = dnum(attribString)
+attribString = getAttribute(domNode, 'betTrans')
+bet_KT = dnum(attribString)
+attribString = getAttribute(domNode, 'alphRot')
+alph_II = dnum(attribString)
+attribString = getAttribute(domNode, 'betRot')
+bet_KR = dnum(attribString)
+
+allocate(rigidbodyptr)
+call make_rigidbody(rigidbodyptr, ID, nodeIDs, rigidoffsetIDs, active, &
+                    mass, II, KT, KR, &
+                    alph_m, bet_KT, alph_II, bet_KR)
+call add_element_to_domain(rigidbodyptr)
+
+end subroutine processRigidBody
     
 !-------------------------------------------------
 ! Functions related to parsing CSV strings

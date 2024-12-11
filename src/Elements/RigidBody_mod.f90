@@ -6,14 +6,6 @@ use Element_mod, only : Element_t
 implicit none
 
 type, extends(Element_t) :: RigidBody_t
-    !--------------------------------------------------------------
-    ! GEOMETRY
-    !--------------------------------------------------------------
-    ! x0 = reference position of joint 1; (3x1) vector
-    ! RJ = rotation of joint 1 coordinate frame with respect to global
-    ! rr = end offset, 3x1 vector
-    real(kind=8), dimension(3) :: x0, rr
-    real(kind=8), dimension(9) :: RJ
     ! MASS PROPERTIES
     !--------------------------------------------------------------
     real(kind=8) :: mass ! mass
@@ -41,23 +33,19 @@ contains
 
 !--------------------------------------------------------
 
-subroutine make_rigidbody(this, x0, RJ, rr,&
+subroutine make_rigidbody(this, ID, nodeID, rigidoffsetID, active, &
                            mass, II, KT, KR, &
                            alph_m, bet_KT, alph_II, bet_KR)
 
-class(RigidBody_t), intent(out) :: this
-real(kind=8), dimension(3), intent(in) :: x0, rr
-real(kind=8), dimension(9), intent(in) :: RJ
+class(RigidBody_t), intent(inout) :: this
+integer(kind=4), intent(in) :: ID, nodeID(1), rigidoffsetID(1)
+logical, intent(in) :: active
 real(kind=8), intent(in) :: mass
 real(kind=8) :: alph_m ! mass-proportional damping
 real(kind=8) :: bet_KT ! translational stiffness-proportional damping
 real(kind=8) :: alph_II ! moment of inertia-proportional damping
 real(kind=8) :: bet_KR ! rotational stiffness-proportional damping
 real(kind=8), dimension(9), intent(in) :: II, KT, KR
-
-this%x0 = x0
-this%RJ = RJ
-this%rr = rr
 
 this%mass = mass
 this%II = II
@@ -70,6 +58,9 @@ this%CT(5) = alph_m*mass
 this%CT(9) = alph_m*mass
 this%CR = alph_II*II + bet_KR*KR
 
+call this%make_Element(ID, 1, nodeID, rigidoffsetID, &
+                       0, active)
+
 end subroutine make_rigidbody
 
 !--------------------------------------------------------
@@ -78,7 +69,9 @@ subroutine destroy_rigidbody(this)
 
 type(RigidBody_t), intent(inout) :: this
 
-! nothing to deallocate
+call this%destroy_element
+
+print*,'RigidBody destroyed from destructor!'
 
 end subroutine destroy_rigidbody
 
@@ -110,7 +103,7 @@ endif
 call RigidBodyForce(this%d, this%phi, &
                     this%ddot, this%phidot, this%dddot, this%phiddot,  &
                     this%mass, this%II, this%KT, this%CT, this%KR, this%CR, &
-                    this%rr, this%RJ, u, &
+                    this%offsets(1)%vector, this%nodes(1)%ptr%RJ, u, &
                     this%F, this%K, this%C, this%M, this%B)
 
 end subroutine setState_rigidbody

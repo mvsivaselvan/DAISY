@@ -320,10 +320,8 @@ call CableForceRotBCinCoord &
          this%d1ddot, this%phi1ddot, this%gamma1ddot,&
          this%d2ddot, this%phi2ddot, this%gamma2ddot, &
          this%Pmidddot%emx, this%varThetamidddot%emx, &
-         this%Element_t%nodes(1)%ptr%x0, this%Element_t%nodes(1)%ptr%RJ, this%RE1, &
-             this%Element_t%offsets(1)%vector, &
-         this%Element_t%nodes(2)%ptr%x0, this%Element_t%nodes(2)%ptr%RJ, this%RE2, &
-             this%Element_t%offsets(2)%vector, &
+         this%nodes(1)%ptr%x0, this%nodes(1)%ptr%RJ, this%RE1, this%offsets(1)%vector, &
+         this%nodes(2)%ptr%x0, this%nodes(2)%ptr%RJ, this%RE2, this%offsets(2)%vector, &
          this%R0%emx, this%II, &
          this%rho, this%EA, this%EI, this%GJ, this%betAX, this%betBEND, this%betTOR, &
          this%xg%emx, this%wg%emx, this%nel%emx, &
@@ -365,13 +363,10 @@ enddo
 
 call emxArray_2d_create(P, 3, this%N)
 call getCableDeformedShape(this%d1, this%phi1, this%gamma1, &
-                           this%d2, this%phi2, this%gamma2, &
-                           this%Pmid%emx, &
-                           this%Element_t%nodes(1)%ptr%x0, this%Element_t%nodes(1)%ptr%RJ, this%RE1, &
-                               this%Element_t%offsets(1)%vector, Rb10, &
-                           this%Element_t%nodes(2)%ptr%x0, this%Element_t%nodes(2)%ptr%RJ, this%RE2, &
-                               this%Element_t%offsets(2)%vector, Rb20, &
-                           P%emx)
+    this%d2, this%phi2, this%gamma2, this%Pmid%emx, &
+    this%nodes(1)%ptr%x0, this%nodes(1)%ptr%RJ, this%RE1, this%offsets(1)%vector, Rb10, &
+    this%nodes(2)%ptr%x0, this%nodes(2)%ptr%RJ, this%RE2, this%offsets(2)%vector, Rb20, &
+    P%emx)
 
 allocate(s(npts))
 allocate(colmat(npts,this%N))
