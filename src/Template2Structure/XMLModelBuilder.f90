@@ -43,6 +43,13 @@ do i=0,getLength(domNodes)-1
     call processNode(item(domNodes,i))
 enddo
 
+! Rigid offsets
+domNodes => getElementsByTagName(doc,"RigidOffset")
+print*,'Processing rigid offsets ...'
+do i=0,getLength(domNodes)-1
+    call processRigidOffset(item(domNodes,i))
+enddo
+
 call endDomainBuild
 
 call destroyNode(doc)
@@ -87,6 +94,31 @@ call make_Node(nodeptr, ID, x, y, z, RJ, constraints)
 call add_node_to_domain(nodeptr)
 
 end subroutine processNode
+    
+!-------------------------------------------------
+
+subroutine processRigidOffset(domNode)
+
+type(fNode), pointer, intent(in) :: domNode
+character(10) :: attribString
+integer(kind=4) :: ID
+real(kind=8) :: x, y, z
+type(RigidOffset_t), pointer :: offsetptr
+
+attribString = getAttribute(domNode, 'ID')
+ID = jnum(attribString) ! What if ID_TYPE is integer*8 ?
+attribString = getAttribute(domNode, 'X')
+x = dnum(attribString)
+attribString = getAttribute(domNode, 'Y')
+y = dnum(attribString)
+attribString = getAttribute(domNode, 'Z')
+z = dnum(attribString)
+
+allocate(offsetptr)
+call make_RigidOffset(offsetptr, ID, x, y, z)
+call add_rigidoffset_to_domain(offsetptr)
+
+end subroutine processRigidOffset
     
 !-------------------------------------------------
 ! Functions related to parsing CSV strings

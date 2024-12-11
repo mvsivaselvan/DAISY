@@ -4,14 +4,15 @@ use, intrinsic :: iso_c_binding
     
 use Node_mod
 use Element_mod
+use RigidOffset_mod
 
 use stlMap_mod
 
 implicit none
 
-integer(kind=4), private :: numNodes, numElements
+integer(kind=4), private :: numNodes, numElements, numRigidOffsets
 ! For associative access
-type(c_ptr), private :: nodeMap$, elementMap$ 
+type(c_ptr), private :: nodeMap$, elementMap$, rigidoffsetMap$
 ! For sequential access
 type(NodePointer_t), allocatable :: nodearray(:)
 type(ElementPointer_t), allocatable :: elemarray(:)
@@ -26,9 +27,11 @@ subroutine make_domain
 
 numNodes = 0 
 numElements = 0
+numRigidOffsets = 0
 
 nodeMap$ = create_map()
 elementMap$ = create_map()
+rigidoffsetMap$ = create_map()
 
 end subroutine make_domain
 
@@ -36,16 +39,12 @@ end subroutine make_domain
 
 subroutine destroy_domain
 
-! There were put in here simply to test this functionality
-! and kept here for memory, has to be deleted
-!type(c_ptr) :: iter$
-!type(ElementPointer_t), pointer :: elemptr
-!iter$ = get_begin_iterator(elementMap$)
-!call delete_iterator(iter$)
-!call c_f_pointer(get_val_for_key(elementMap$, 1001), elemptr)
-
 integer(kind=4) :: i
 
+type(c_ptr) :: iterator$
+type(RigidOffset_t), pointer :: offset
+
+! Nodes
 do i=1,numNodes
     call destroy_Node(nodearray(i)%ptr)
     deallocate(nodearray(i)%ptr)
@@ -53,7 +52,21 @@ enddo
 if (allocated(nodearray)) deallocate(nodearray)
 call delete_map(nodeMap$)
 
+! Elements
 call delete_map(elementMap$)
+
+! Rigid offsets
+if (numRigidOffsets .gt. 0) then
+    iterator$ = get_begin_iterator(rigidoffsetMap$)
+    do i=1,numRigidOffsets
+        call c_f_pointer(get_value_for_iterator(iterator$), offset)
+        call destroy_rigidoffset(offset)
+        deallocate(offset)
+        call iterate_next(iterator$)
+    enddo
+    call delete_iterator(iterator$)
+endif
+call delete_map(rigidoffsetMap$)
 
 end subroutine destroy_domain
 
@@ -115,5 +128,16 @@ call add_to_map(elementMap$, elem_%ID, c_loc(elemptr))
 end subroutine add_element_to_domain
 
 !--------------------------------------------------------
+
+subroutine add_rigidoffset_to_domain(offset_)
+
+type(RigidOffset_t), target :: offset_
+
+numRigidOffsets = numRigidOffsets + 1
+call add_to_map(rigidoffsetMap$, offset_%ID, c_loc(offset_))
+
+end subroutine add_rigidoffset_to_domain
+
+!--------------------------------------------------------!--------------------------------------------------------
     
 end module Domain_mod

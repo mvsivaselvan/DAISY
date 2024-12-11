@@ -52,7 +52,8 @@
 		<Filter Name="Source Files" Filter="f90;for;f;fpp;ftn;def;odl;idl">
 		<File RelativePath="..\..\Core\Domain_mod.f90"/>
 		<File RelativePath="..\..\Core\Element_mod.f90"/>
-		<File RelativePath="..\..\Core\Node_mod.f90"/></Filter>
+		<File RelativePath="..\..\Core\Node_mod.f90"/>
+		<File RelativePath="..\..\Core\RigidOffset_mod.f90"/></Filter>
 	</Files>
 	<Globals/>
 </VisualStudioProject>
