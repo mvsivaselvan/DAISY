@@ -17,13 +17,13 @@
 	<RigidBody ID="101" Nodes="1" Active="True" RigidOffsets="3" 
 		Mass="0.411" MomentOfInertia="1370,14.39,0,1370,0,0"
 		TranslationStiffness="0,0,0,0,0,0" 
-		RotationtionStiffness="2590000,0,0,2560000,0,0"
+		RotationStiffness="2590000,0,0,2560000,0,0"
 		alphTrans="0.0" betTrans="0.0" alphRot="0.0" betRot="1.84e-4"/>
 	<!-- Rigid body repreenting B -->
 	<RigidBody ID="102" Nodes="2" Active="True" RigidOffsets="3" 
 		Mass="2.41" MomentOfInertia="4190,12.57,0,4190,0,0"
 		TranslationStiffness="0,0,0,0,0,39900" 
-		RotationtionStiffness="7530000,0,0,5600000,0,0"
+		RotationStiffness="7530000,0,0,5600000,0,0"
 		alphTrans="1.029" betTrans="0.0" alphRot="0.0" betRot="3.77e-4"/>
 	<!-- Conductor (C) -->
 	<Cable ID="1001" Nodes="3,4" Active="False" RigidOffsets="1,2"
