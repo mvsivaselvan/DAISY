@@ -1,5 +1,6 @@
  <DAISYDataSet>
-	<Cable ID="1001" Nodes="3,4" Active="False" RigidOffsets="1,2">
+	<Cable ID="1001" Nodes="3,4" Active="False" RigidOffsets="1,2"
+	    Frame1="1,0,0,0,1,0,0,0,1" Frame2="1,0,0,0,1,0,0,0,1">
 		<ReferenceGeometry File="refCircle.txt"/>
 		<Properties rho="3.9878e-4" EA="157e5" EI="21800" GJ="16769" betBEND="0.01" betAX="0.01" betTOR="0.01" alpha="0.0" 
 			SectionMassMomentOfInertia="9.9e-7,0,0,9.9e-7,0,1.98e-6"/>

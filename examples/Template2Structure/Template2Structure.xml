@@ -2,7 +2,7 @@
 	<!-- Acceleration due to gravity in proper units (in/s^2) to apply self weight -->
 	<Gravity Value="386.4"/>
 	<!-- Node for surge arrester (SA) -->
-	<Node ID="1" X="0" Y="0" Z="0" Constraints="111001" Frame="0,0,0,0,0,0,0,0,0"\>
+	<Node ID="1" X="0" Y="0" Z="0" Constraints="111001" Frame="1,0,0,0,1,0,0,0,1"/>
 	<!-- Node for bushing (B)-->
 	<Node ID="2" X="125.0" Y="0" Z="0" Constraints="110001"/>
 	<!-- Node for SA side of conductor -->
@@ -13,18 +13,19 @@
 	<RigidOffset ID="1" X="0" Y="0" Z="0"/> <!-- SA -->
 	<RigidOffset ID="2" X="0" Y="0" Z="0"/> <!-- B -->
 	<RigidOffset ID="3" X="0" Y="0" Z="0"/> <!-- Default 0 -->
-	<!-- Rigid body repreenting SA --->
+	<!-- Rigid body repreenting SA -->
 	<RigidBody ID="101" Nodes="1" Active="True" RigidOffsets="3" 
 		Mass="" MomentOfInertia="0,0,0,0,0,0"
 		TranslationStiffness="0,0,0,0,0,0" RotationtionStiffness="0,0,0,0,0,0"
 		alphTrans="0.0" betTrans="0.0" alphRot="0.0" betRot="0.0"/>
-	<!-- Rigid body repreenting B --->
-	<RigidBody ID="102" Nodes="2" Active"True" RigidOffsets="3" 
+	<!-- Rigid body repreenting B -->
+	<RigidBody ID="102" Nodes="2" Active="True" RigidOffsets="3" 
 		Mass="" MomentOfInertia="0,0,0,0,0,0"
 		TranslationStiffness="0,0,0,0,0,0" RotationtionStiffness="0,0,0,0,0,0"
 		alphTrans="0.0" betTrans="0.0" alphRot="0.0" betRot="0.0"/>
 	<!-- Conductor (C) -->
-	<Cable ID="1001" Nodes="3,4" Active="False" RigidOffsets="1,2">
+	<Cable ID="1001" Nodes="3,4" Active="False" RigidOffsets="1,2"
+	    Frame1="1,0,0,0,1,0,0,0,1" Frame2="1,0,0,0,1,0,0,0,1">
 		<ReferenceGeometry File="refCircle.txt"/>
 		<Properties rho="3.9878e-4" EA="157e5" EI="21800" GJ="16769" betBEND="0.01" betAX="0.01" betTOR="0.01" alpha="0.0" 
 			SectionMassMomentOfInertia="9.9e-7,0,0,9.9e-7,0,1.98e-6"/>
@@ -58,7 +59,7 @@
 		(2) Release SA and B nodes
 		(3) Activate SA and B
 	-->
-	<DODConstraints ID="31">
+	<DOFConstraints ID="31">
 		<Constraint ID="311" Independent="1" Dependent="3" Action="+" ConstrainedDOF="111111"/>
 		<Constraint ID="312" Independent="2" Dependent="4" Action="+" ConstrainedDOF="111111"/>
 	</DOFConstraints>
@@ -83,4 +84,3 @@
 		<ElementOuput ID="3" Element="1001" File="ConductorOut.dat"/>
 	</Output>
  </DAISYDataSet>
- 

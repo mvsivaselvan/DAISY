@@ -9,14 +9,9 @@ type, extends(Element_t) :: Cable_t
     !--------------------------------------------------------------
     ! GEOMETRY
     !--------------------------------------------------------------
-    ! x01 = reference position of joint 1; (3x1) vector
-    ! RJ1 = rotation of joint 1 coordinate frame with respect to global
     ! RE1 = rotation of cable end 1 with respect to joint 1 coordinate frame
-    ! r1 = position of cable end 1 relative to joint 1 in joint 1 coordinate 
-    !       system (end offset, 3x1 vector)
-    ! x02, RJ2, RE2, r2 - same at end 2 (s=1) 
-    real(kind=8), dimension(3) :: x01, r1, x02, r2
-    real(kind=8), dimension(9) :: RJ1, RE1, RJ2, RE2
+    ! RE2 - same at end 2 (s=1) 
+    real(kind=8), dimension(9) :: RE1, RE2
     
     !--------------------------------------------------------------
     ! SECTION PROPERTIES
@@ -61,7 +56,7 @@ type, extends(Element_t) :: Cable_t
     type(emxArray_1d_wrapper) :: Fb
     type(emxArray_2d_wrapper) :: Kb, Cb, Mb, Bb
 contains
-    procedure :: Cable_t => make_cable
+    procedure :: make_cable
     final :: destroy_cable
     procedure :: setState => setState_cable
 end type Cable_t
@@ -70,8 +65,8 @@ contains
 
 !--------------------------------------------------------
 
-subroutine make_cable(this, &
-                      x01, RJ1, RE1, r1, x02, RJ2, RE2, r2, &
+subroutine make_cable(this, ID, nodeIDlist, rigidoffsetIDList, active, &
+                      RE1, RE2, &
                       N, d, dbrev, dbar, Ng, refGeom, &
                       rho, EI, EA, GJ, betBEND, betAX, betTOR, alph0, II)
 
@@ -79,10 +74,11 @@ use GaussQuad
 use BSpline
 use MATLABelements, only: SplineApproximation, getBishopFrame, CableMbar
 
-class(Cable_t), intent(out) :: this
-
-real(kind=8), dimension(3), intent(in) :: x01, r1, x02, r2
-real(kind=8), dimension(9), intent(in) :: RJ1, RE1, RJ2, RE2
+class(Cable_t), intent(inout) :: this
+integer(kind=4), intent(in) :: ID
+integer(kind=4), dimension(2), intent(in) :: nodeIDlist, rigidoffsetIDlist
+logical, intent(in) :: active
+real(kind=8), dimension(9), intent(in) :: RE1, RE2
 
 integer, intent(in) :: N, d, dbrev, dbar, Ng
 real(kind=8), dimension(:,:), intent(in) :: refGeom ! (x,y,z) coord of reference geometry
@@ -100,14 +96,8 @@ integer :: i
 real(kind=8) :: err
 integer :: nDof
 
-this%x01 = x01
-this%RJ1 = RJ1
 this%RE1 = RE1
-this%r1 = r1
-this%x02 = x02
-this%RJ2 = RJ2
 this%RE2 = RE2
-this%r2 = r2
 
 this%rho = rho
 this%EA = EA
@@ -237,6 +227,9 @@ call emxArray_2d_create(this%Cb, nDof, nDof)
 call emxArray_2d_create(this%Mb, nDof, nDof)
 call emxArray_2d_create(this%Bb, nDof, 3)
 
+call this%make_Element(ID, 2, nodeIDlist, rigidoffsetIDList, &
+                       nDof-12, active)
+
 end subroutine make_cable
     
 !--------------------------------------------------------
@@ -268,6 +261,8 @@ call emxArray_2d_destroy(this%Kb)
 call emxArray_2d_destroy(this%Cb)
 call emxArray_2d_destroy(this%Mb)
 call emxArray_2d_destroy(this%Bb)
+
+call this%destroy_element
 
 print*,'Cable destroyed from destructor!'
 
@@ -325,7 +320,10 @@ call CableForceRotBCinCoord &
          this%d1ddot, this%phi1ddot, this%gamma1ddot,&
          this%d2ddot, this%phi2ddot, this%gamma2ddot, &
          this%Pmidddot%emx, this%varThetamidddot%emx, &
-         this%x01, this%RJ1, this%RE1, this%r1, this%x02, this%RJ2, this%RE2, this%r2, &
+         this%Element_t%nodes(1)%ptr%x0, this%Element_t%nodes(1)%ptr%RJ, this%RE1, &
+             this%Element_t%offsets(1)%vector, &
+         this%Element_t%nodes(2)%ptr%x0, this%Element_t%nodes(2)%ptr%RJ, this%RE2, &
+             this%Element_t%offsets(2)%vector, &
          this%R0%emx, this%II, &
          this%rho, this%EA, this%EI, this%GJ, this%betAX, this%betBEND, this%betTOR, &
          this%xg%emx, this%wg%emx, this%nel%emx, &
@@ -369,8 +367,10 @@ call emxArray_2d_create(P, 3, this%N)
 call getCableDeformedShape(this%d1, this%phi1, this%gamma1, &
                            this%d2, this%phi2, this%gamma2, &
                            this%Pmid%emx, &
-                           this%x01, this%RJ1, this%RE1, this%r1, Rb10, &
-                           this%x02, this%RJ2, this%RE2, this%r2, Rb20, &
+                           this%Element_t%nodes(1)%ptr%x0, this%Element_t%nodes(1)%ptr%RJ, this%RE1, &
+                               this%Element_t%offsets(1)%vector, Rb10, &
+                           this%Element_t%nodes(2)%ptr%x0, this%Element_t%nodes(2)%ptr%RJ, this%RE2, &
+                               this%Element_t%offsets(2)%vector, Rb20, &
                            P%emx)
 
 allocate(s(npts))

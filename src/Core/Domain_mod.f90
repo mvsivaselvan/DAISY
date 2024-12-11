@@ -14,8 +14,8 @@ integer(kind=4), private :: numNodes, numElements, numRigidOffsets
 ! For associative access
 type(c_ptr), private :: nodeMap$, elementMap$, rigidoffsetMap$
 ! For sequential access
-type(NodePointer_t), allocatable :: nodearray(:)
-type(ElementPointer_t), allocatable :: elemarray(:)
+type(NodePointer_t), allocatable, private :: nodearray(:)
+type(ElementPointer_t), allocatable, private :: elemarray(:)
 
 contains
 
@@ -53,6 +53,10 @@ if (allocated(nodearray)) deallocate(nodearray)
 call delete_map(nodeMap$)
 
 ! Elements
+do i=1,numElements
+    deallocate(elemarray(i)%ptr)
+enddo
+if (allocated(elemarray)) deallocate(elemarray)
 call delete_map(elementMap$)
 
 ! Rigid offsets
@@ -81,13 +85,13 @@ end subroutine startDomainBuild
 subroutine endDomainBuild
 
 type(c_ptr) :: iterator$, node$
+integer(kind=4) :: i, nodeind
+type(ElementPointer_t), pointer :: tempElemptr
+type(RigidOffset_t), pointer :: offsetptr
 
-integer(kind=4) :: i
-
-! Allocate node array for iterative access
+! Add nodes to array container
 if (numNodes .gt. 0) then
     allocate( nodearray(numNodes) )
-    ! Add nodes to array container
     iterator$ = get_begin_iterator(nodeMap$)
     do i=1,numNodes
         call c_f_pointer(get_value_for_iterator(iterator$), nodearray(i)%ptr)
@@ -96,8 +100,25 @@ if (numNodes .gt. 0) then
     call delete_iterator(iterator$)
 endif
 
-!if (numElements .gt. 0) allocate( elemarray(numElements) )
-
+! Add elements to array container, and associate with nodes
+! and rigid offsets
+if (numElements .gt. 0) then
+    allocate( elemarray(numElements) )
+    iterator$ = get_begin_iterator(elementMap$)
+    do i=1,numElements
+        call c_f_pointer(get_value_for_iterator(iterator$), tempElemptr)
+        elemarray(i)%ptr => tempElemptr%ptr
+        do nodeind = 1, elemarray(i)%ptr%numNodes
+            call c_f_pointer(get_val_for_key(nodeMap$,elemarray(i)%ptr%nodeIDlist(nodeind)), &
+                             elemarray(i)%ptr%nodes(nodeind)%ptr)
+            call c_f_pointer(get_val_for_key(rigidoffsetMap$,&
+                      elemarray(i)%ptr%rigidoffsetIDlist(nodeind)), offsetptr)
+            elemarray(i)%ptr%offsets(nodeind)%vector = offsetptr%offset
+        enddo
+        call iterate_next(iterator$)
+    enddo
+    call delete_iterator(iterator$)
+endif
 
 end subroutine endDomainBuild
 

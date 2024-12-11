@@ -4,7 +4,7 @@ use Node_mod, only : NodePointer_t
 
 implicit none
 
-type, private :: Offset_t
+type Offset_t
     real(kind=8), dimension(3) :: vector = (/0.0,0.0,0.0/)
 end type Offset_t
     
@@ -43,28 +43,30 @@ contains
 
 !--------------------------------------------------------
 
-subroutine make_element(this, ID, numNodes, nodeIDlist, numEqs, active, &
-                        rigidoffsetIDList)
-class(Element_t), intent(out) :: this
+subroutine make_element(this, ID, numNodes, nodeIDlist, rigidoffsetIDList, &
+                        numEqs, active)
+class(Element_t), intent(inout) :: this
 integer(kind=4), intent(in) :: ID
 integer(kind=4), intent(in) :: numNodes
 integer(kind=4), dimension(numNodes), intent(in) :: nodeIDlist
+integer(kind=4), dimension(numNodes), intent(in) :: rigidOffsetIDlist
 integer(kind=4), intent(in) :: numEqs
 logical, intent(in) :: active
-integer(kind=4), dimension(numNodes), intent(in), optional :: rigidOffsetIDlist
 
 this%ID = ID
 this%numNodes = numNodes
+
 allocate(this%nodeIDlist(numNodes))
 this%nodeIDlist = nodeIDlist
 allocate(this%nodes(numNodes))
-if (present(rigidoffsetIDlist)) then
-    allocate(this%rigidoffsetIDlist(numNodes))
-    this%rigidoffsetIDlist = rigidoffsetIDlist
-endif
+
+allocate(this%rigidoffsetIDlist(numNodes))
+this%rigidoffsetIDlist = rigidoffsetIDlist
 allocate(this%offsets(numNodes))                        
+
 this%numEqs = numEqs
 allocate(this%equationNumber(numEqs))
+
 this%active = active
 
 end subroutine make_element
@@ -73,7 +75,7 @@ end subroutine make_element
 
 subroutine destroy_element(this)
 
-class(Element_t), intent(out) :: this
+class(Element_t), intent(inout) :: this
 
 if (allocated(this%nodeIDlist)) deallocate(this%nodeIDlist)
 if (allocated(this%nodes)) deallocate(this%nodes)

@@ -3,6 +3,7 @@ module XMLModelBuilder
 use flib_dom
 
 use Domain_mod
+use Cable_mod
 
 implicit none
 
@@ -48,6 +49,13 @@ domNodes => getElementsByTagName(doc,"RigidOffset")
 print*,'Processing rigid offsets ...'
 do i=0,getLength(domNodes)-1
     call processRigidOffset(item(domNodes,i))
+enddo
+
+! Cables
+domNodes => getElementsByTagName(doc,"Cable")
+print*,'Processing cables ...'
+do i=0,getLength(domNodes)-1
+    call processCable(item(domNodes,i))
 enddo
 
 call endDomainBuild
@@ -106,7 +114,7 @@ real(kind=8) :: x, y, z
 type(RigidOffset_t), pointer :: offsetptr
 
 attribString = getAttribute(domNode, 'ID')
-ID = jnum(attribString) ! What if ID_TYPE is integer*8 ?
+ID = jnum(attribString) 
 attribString = getAttribute(domNode, 'X')
 x = dnum(attribString)
 attribString = getAttribute(domNode, 'Y')
@@ -119,6 +127,107 @@ call make_RigidOffset(offsetptr, ID, x, y, z)
 call add_rigidoffset_to_domain(offsetptr)
 
 end subroutine processRigidOffset
+    
+!-------------------------------------------------
+
+subroutine processCable(domNode)
+
+type(fNode), pointer, intent(in) :: domNode
+type(fNodeList), pointer :: domNodes
+type(fNode), pointer :: refgeomDOMnode
+type(fNode), pointer :: propertiesDOMnode
+type(fNode), pointer :: sectionInertiaDOMnode
+type(fNode), pointer :: splineparamDOMnode
+character(20) :: refgeomFile
+character(50) :: attribString
+integer(kind=4) :: ID
+integer(kind=4), dimension(2) :: nodeIDs, rigidOffsetIDs
+logical :: active
+real(kind=8), dimension(9) :: RE1, RE2
+
+! Spline parameters
+integer :: N ! number of control points
+integer :: d ! Degree -- cubic spline
+integer :: dbrev ! Degree for twist
+integer :: dbar ! Degree for strain projection basis
+integer :: Ng ! Number of Gauss points per element
+
+real(kind=8), dimension(101,3) :: refGeom ! Coordinates pf reference geometry
+integer :: i
+
+! Material and section properties
+real(kind=8) :: rho ! mass per unit length
+real(kind=8) :: EI 
+real(kind=8) :: EA 
+real(kind=8) :: GJ 
+real(kind=8) :: betBEND ! damping coefficient for bending
+real(kind=8) :: betAX ! damping coefficient for axial
+real(kind=8) :: betTOR ! damping coefficient for torsion
+real(kind=8) :: alph0 ! mass proportional damping factor
+real(kind=8), dimension(3,3) :: II
+
+type(Cable_t), pointer :: cableptr
+
+attribString = getAttribute(domNode, 'ID')
+ID = jnum(attribString) 
+attribString = getAttribute(domNode, 'Nodes')
+call csv2array(2, attribString, nodeIDs)
+attribString = getAttribute(domNode, 'RigidOffsets')
+call csv2array(2, attribString, rigidoffsetIDs)
+attribString = getAttribute(domNode, 'Active')
+if (attribString == "true") then
+    active = .true.
+else
+    active = .false.
+endif
+attribString = getAttribute(domNode, 'Frame1')
+call get3x3MatrixFromString(attribString, RE1, .false.)
+attribString = getAttribute(domNode, 'Frame2')
+call get3x3MatrixFromString(attribString, RE2, .false.)
+
+domNodes => getElementsByTagName(domNode,'ReferenceGeometry')
+refgeomDOMnode => item(domNodes,0)
+refgeomFile = getAttribute(refgeomDOMnode,'File')
+domNodes => getElementsByTagName(domNode,'Properties')
+propertiesDOMnode => item(domNodes,0)
+attribString = getAttribute(propertiesDOMnode,'rho')
+rho = dnum(attribString)
+attribString = getAttribute(propertiesDOMnode,'EA')
+EA = dnum(attribString)
+attribString = getAttribute(propertiesDOMnode,'EI')
+EI = dnum(attribString)
+attribString = getAttribute(propertiesDOMnode,'GJ')
+GJ = dnum(attribString)
+attribString = getAttribute(propertiesDOMnode,'SectionMassMomentOfInertia')
+call get3x3MatrixFromString(attribString, II, .true.)
+domNodes => getElementsByTagName(domNode,'SplineParameters')
+splineparamDOMnode => item(domNodes,0)
+attribString = getAttribute(splineparamDOMnode,'N')
+N = jnum(attribString)
+attribString = getAttribute(splineparamDOMnode,'d')
+d = jnum(attribString)
+attribString = getAttribute(splineparamDOMnode,'dtwist')
+dbrev = jnum(attribString)
+attribString = getAttribute(splineparamDOMnode,'dstrain')
+dbar = jnum(attribString)
+attribString = getAttribute(splineparamDOMnode,'NGauss')
+Ng = jnum(attribString)
+
+! Read reference geometry from file
+open(file=trim(refgeomFile), unit=100, status='old')
+do i = 1,101
+    read(100,*)refGeom(i,1:3)
+enddo
+close(unit=100)
+
+allocate(cableptr)
+call make_cable(cableptr, ID, nodeIDs, rigidoffsetIDs, active, &
+                RE1, RE2, &
+                N, d, dbrev, dbar, Ng, refGeom, &
+                rho, EI, EA, GJ, betBEND, betAX, betTOR, alph0, II)
+call add_element_to_domain(cableptr)
+
+end subroutine processCable
     
 !-------------------------------------------------
 ! Functions related to parsing CSV strings
