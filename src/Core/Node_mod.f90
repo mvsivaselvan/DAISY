@@ -14,7 +14,6 @@ type Node_t
     integer(kind=4) :: equationNumber(NUM_NODE_DOF)
     integer(kind=4) :: reactNumber(NUM_NODE_DOF)
     double precision, dimension(NUM_NODE_DOF) :: x, xd, xdd ! displacement, velocity, accel
-    logical :: active
 end type Node_t
 
 type NodePointer_t
@@ -27,14 +26,13 @@ contains
 
 !--------------------------------------------------------
 
-subroutine make_Node(this, ID, x, y, z, RJ, constraints, active)
+subroutine make_Node(this, ID, x, y, z, RJ, constraints)
 
 type(Node_t), intent(out) :: this
 integer(kind=4), intent(in) :: ID
 real(kind=8), intent(in) :: x, y, z
 real(kind=8), dimension(9), intent(in) :: RJ
 integer(kind=4), intent(in) :: constraints(NUM_NODE_DOF)
-logical, intent(in) :: active
 
 this%ID = ID
 this%x0(1) = x
@@ -47,16 +45,15 @@ this%reactNumber = 0
 this%x = 0.d0
 this%xd = 0.d0
 this%xdd = 0.d0
-this%active = active
 
 end subroutine make_Node
 
 !--------------------------------------------------------
 
 subroutine destroy_Node(this)
-type(Node_t), intent(out) :: this
+type(Node_t), intent(inout) :: this
 
-this%active = .false.
+! Nothing to deallocate
 
 end subroutine destroy_Node
 

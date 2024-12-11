@@ -85,6 +85,8 @@ call make_domain
 
 call getarg(1, inpFilename, cmdLineStatus)
 
+call buildModel(inpFileName)
+
 ! doc => parsefile('Circle2Catenary.xml')
 doc => parsefile(inpFilename)
 domNodes => getElementsByTagName(doc,'Cable')
