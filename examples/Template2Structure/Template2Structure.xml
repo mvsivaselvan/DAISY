@@ -1,28 +1,30 @@
  <DAISYDataSet>
 	<!-- Acceleration due to gravity in proper units (in/s^2) to apply self weight -->
-	<Gravity Value="386.4"/>
+	<Gravity Value="386.4" Direction="0,0,-1"/>
 	<!-- Node for surge arrester (SA) -->
 	<Node ID="1" X="0" Y="0" Z="0" Constraints="111001" Frame="1,0,0,0,1,0,0,0,1"/>
 	<!-- Node for bushing (B)-->
-	<Node ID="2" X="125.0" Y="0" Z="0" Constraints="110001"/>
+	<Node ID="2" X="125.0" Y="0" Z="0" Constraints="110001" Frame="1,0,0,0,1,0,0,0,1"/>
 	<!-- Node for SA side of conductor -->
-	<Node ID="3" X="0" Y="0" Z="0" Constraints="111111"/>
+	<Node ID="3" X="0" Y="0" Z="0" Constraints="111111" Frame="1,0,0,0,1,0,0,0,1"/>
 	<!-- Node for B side of conductor -->
-	<Node ID="4" X="121.2761" Y="0" Z="0" Constraints="111111"/>
+	<Node ID="4" X="121.2761" Y="0" Z="0" Constraints="111111" Frame="1,0,0,0,1,0,0,0,1"/>
 	<!-- Rigid offsets from base to terminal of SA and B -->
-	<RigidOffset ID="1" X="0" Y="0" Z="0"/> <!-- SA -->
-	<RigidOffset ID="2" X="0" Y="0" Z="0"/> <!-- B -->
+	<RigidOffset ID="1" X="0" Y="0" Z="92.25"/> <!-- SA -->
+	<RigidOffset ID="2" X="0" Y="0" Z="91.0"/> <!-- B -->
 	<RigidOffset ID="3" X="0" Y="0" Z="0"/> <!-- Default 0 -->
 	<!-- Rigid body repreenting SA -->
 	<RigidBody ID="101" Nodes="1" Active="True" RigidOffsets="3" 
-		Mass="" MomentOfInertia="0,0,0,0,0,0"
-		TranslationStiffness="0,0,0,0,0,0" RotationtionStiffness="0,0,0,0,0,0"
-		alphTrans="0.0" betTrans="0.0" alphRot="0.0" betRot="0.0"/>
+		Mass="0.411" MomentOfInertia="1370,14.39,0,1370,0,0"
+		TranslationStiffness="0,0,0,0,0,0" 
+		RotationtionStiffness="2590000,0,0,2560000,0,0"
+		alphTrans="0.0" betTrans="0.0" alphRot="0.0" betRot="1.84e-4"/>
 	<!-- Rigid body repreenting B -->
 	<RigidBody ID="102" Nodes="2" Active="True" RigidOffsets="3" 
-		Mass="" MomentOfInertia="0,0,0,0,0,0"
-		TranslationStiffness="0,0,0,0,0,0" RotationtionStiffness="0,0,0,0,0,0"
-		alphTrans="0.0" betTrans="0.0" alphRot="0.0" betRot="0.0"/>
+		Mass="2.41" MomentOfInertia="4190,12.57,0,4190,0,0"
+		TranslationStiffness="0,0,0,0,0,39900" 
+		RotationtionStiffness="7530000,0,0,5600000,0,0"
+		alphTrans="1.029" betTrans="0.0" alphRot="0.0" betRot="3.77e-4"/>
 	<!-- Conductor (C) -->
 	<Cable ID="1001" Nodes="3,4" Active="False" RigidOffsets="1,2"
 	    Frame1="1,0,0,0,1,0,0,0,1" Frame2="1,0,0,0,1,0,0,0,1">
