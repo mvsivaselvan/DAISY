@@ -38,6 +38,10 @@ doc => parsefile(filename)
 call make_Domain
 call startDomainBuild
 
+domNodes => getElementsByTagName(doc,"Gravity")
+print*,'Processing gravity ...'
+call processGravity(item(domNodes,0))
+
 ! Nodes
 domNodes => getElementsByTagName(doc,"Node")
 print*,'Processing nodes ...'
@@ -71,6 +75,23 @@ call endDomainBuild
 call destroyNode(doc)
 
 end subroutine buildModel
+
+!-------------------------------------------------
+
+subroutine processGravity(domNode)
+
+type(fNode), pointer, intent(in) :: domNode
+character(10) :: attribString
+real(kind=8) :: val, dir(3)
+
+attribString = getAttribute(domNode, 'Value')
+val = dnum(attribString)
+attribString = getAttribute(domNode, 'Direction')
+call csv2array(3, attribString, dir)
+
+gravity_u = val*dir
+
+end subroutine processGravity
 
 !-------------------------------------------------
 

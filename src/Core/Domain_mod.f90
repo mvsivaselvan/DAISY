@@ -10,6 +10,8 @@ use stlMap_mod
 
 implicit none
 
+real(kind=8), dimension(3) :: gravity_u = (/0.0, 0.0, 0.0/)
+
 integer(kind=4), private :: numNodes, numElements, numRigidOffsets
 ! For associative access
 type(c_ptr), private :: nodeMap$, elementMap$, rigidoffsetMap$
