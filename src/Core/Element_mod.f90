@@ -16,12 +16,14 @@ type, abstract :: Element_t
     type(NodePointer_t), dimension(:), allocatable :: nodes ! pointers to nodes 
     type(Offset_t), dimension(:), allocatable :: offsets
     integer(kind=4) :: numEqs ! number of element-level DOF
-    integer(kind=4), allocatable, dimension(:) :: equationNumber
+    integer(kind=4), dimension(:), allocatable :: equationNumber
+    real(kind=8), dimension(:), allocatable :: x, xd, xdd ! State
     logical :: active
 contains
     procedure :: make_element
     procedure :: destroy_element
     procedure(setState_element), deferred :: setState
+    procedure :: setDOF
 end type Element_t
 
 abstract interface
@@ -65,7 +67,12 @@ this%rigidoffsetIDlist = rigidoffsetIDlist
 allocate(this%offsets(numNodes))                        
 
 this%numEqs = numEqs
-if (numEqs .gt. 0) allocate(this%equationNumber(numEqs))
+if (numEqs .gt. 0) then
+    allocate(this%equationNumber(numEqs))
+    allocate(this%x(numEqs))
+    allocate(this%xd(numEqs))
+    allocate(this%xdd(numEqs))
+endif
 
 this%active = active
 
@@ -82,9 +89,27 @@ if (allocated(this%nodes)) deallocate(this%nodes)
 if (allocated(this%rigidoffsetIDlist)) deallocate(this%rigidoffsetIDlist)
 if (allocated(this%offsets)) deallocate(this%offsets)
 if (allocated(this%equationNumber)) deallocate(this%equationNumber)
+if (allocated(this%x)) deallocate(this%x)
+if (allocated(this%xd)) deallocate(this%xd)
+if (allocated(this%xdd)) deallocate(this%xdd)
 
 end subroutine destroy_element
     
+!--------------------------------------------------------
+
+subroutine setDOF(this, x, xd, xdd)
+
+class(Element_t), intent(inout) :: this
+real(kind=8), dimension(:), intent(in) :: x, xd, xdd
+
+if (this%numEqs .eq. 0) return
+
+this%x = x(this%equationNumber)
+this%xd = xd(this%equationNumber)
+this%xdd = xdd(this%equationNumber)
+
+end subroutine setDOF
+
 !--------------------------------------------------------
     
 end module Element_mod
