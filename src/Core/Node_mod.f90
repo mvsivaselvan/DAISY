@@ -13,7 +13,7 @@ type Node_t
     integer(kind=4) :: constraints(NUM_NODE_DOF)
     integer(kind=4) :: equationNumber(NUM_NODE_DOF)
     integer(kind=4) :: reactNumber(NUM_NODE_DOF)
-    double precision, dimension(NUM_NODE_DOF) :: x, xd, xdd ! displacement, velocity, accel
+    real(kind=8), dimension(NUM_NODE_DOF) :: x, xd, xdd ! displacement, velocity, accel
 end type Node_t
 
 type NodePointer_t
@@ -56,6 +56,25 @@ type(Node_t), intent(inout) :: this
 ! Nothing to deallocate
 
 end subroutine destroy_Node
+
+!--------------------------------------------------------
+
+subroutine setDOF(this, x, xd, xdd)
+
+type(Node_t), intent(inout) :: this
+real(kind=8), dimension(:), intent(in) :: x, xd, xdd
+
+integer(kind=4) :: n
+
+do n = 1,NUM_NODE_DOF
+    if (this%constraints(n) .eq. 0) then
+        this%x(n) = x(this%equationNumber(n))
+        this%xd(n) = xd(this%equationNumber(n))
+        this%xdd(n) = xdd(this%equationNumber(n))
+    endif
+enddo
+
+end subroutine setDOF
 
 !--------------------------------------------------------
 !    Utility functions
