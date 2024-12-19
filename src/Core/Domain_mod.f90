@@ -12,12 +12,21 @@ implicit none
 
 real(kind=8), dimension(3) :: gravity_u = (/0.0, 0.0, 0.0/)
 
-integer(kind=4), private :: numNodes, numElements, numRigidOffsets
+! Nodes and elements
+integer(kind=4), private :: numNodes, numElements
 ! For associative access
-type(c_ptr), private :: nodeMap$, elementMap$, rigidoffsetMap$
+type(c_ptr), private :: nodeMap$, elementMap$
 ! For sequential access
 type(NodePointer_t), allocatable, private :: nodearray(:)
 type(ElementPointer_t), allocatable, private :: elemarray(:)
+
+! Rigid Offsets
+integer(kind=4), private :: numRigidOffsets
+type(c_ptr), private :: rigidoffsetMap$
+
+! Boundary conditions, DOF constraints and Element sets
+integer(kind=4), private :: numBCs, numElemSets, numDofConstraints
+type(c_ptr), private :: bcMap$, elementSetMap$, dofConstraintMap$
 
 contains
 
@@ -27,13 +36,23 @@ contains
 
 subroutine make_domain
 
-numNodes = 0 
-numElements = 0
-numRigidOffsets = 0
-
+numNodes = 0
 nodeMap$ = create_map()
+
+numElements = 0
 elementMap$ = create_map()
+
+numRigidOffsets = 0
 rigidoffsetMap$ = create_map()
+
+numBCs = 0
+bcMap$ = create_map()
+
+numElemSets = 0
+elementSetMap$ = create_map()
+
+numDofConstraints = 0
+dofConstraintMap$ = create_map()
 
 end subroutine make_domain
 
@@ -62,19 +81,26 @@ if (allocated(elemarray)) deallocate(elemarray)
 call delete_map(elementMap$)
 
 ! Rigid offsets
-if (numRigidOffsets .gt. 0) then
-    iterator$ = get_begin_iterator(rigidoffsetMap$)
-    do i=1,numRigidOffsets
-        call c_f_pointer(get_value_for_iterator(iterator$), offset)
-        call destroy_rigidoffset(offset)
-        deallocate(offset)
-        call iterate_next(iterator$)
-    enddo
-    call delete_iterator(iterator$)
-endif
-call delete_map(rigidoffsetMap$)
+call destroy_RigidOffsetMap(rigidoffsetMap$, numRigidOffsets)
+
+! Boundary conditions
+
+! Element sets
+
+! DOF constraints
 
 end subroutine destroy_domain
+
+!--------------------------------------------------------
+! Generic construction of routines to destroy maps
+
+#define SPECIFIC_DESTROY_MAP destroy_RigidOffsetMap
+#define SPECIFIC_COMPONENT_TYPE RigidOffset_t
+#define SPECIFIC_DESTROY_ROUTINE destroy_RigidOffset
+#include "destroy_map_generic.inc"
+#undef SPECIFIC_DESTROY_MAP
+#undef SPECIFIC_COMPONENT_TYPE
+#undef SPECIFIC_DESTROY_ROUTINE
 
 !--------------------------------------------------------
 
