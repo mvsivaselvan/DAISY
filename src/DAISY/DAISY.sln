@@ -44,9 +44,12 @@ EndProject
 Project("{6989167D-11E4-40FE-8C1A-2192A86A7E90}") = "CoreLib", "CoreLib\CoreLib.vfproj", "{B0A08DBA-4A48-405C-A582-31D8ADF8C5A5}"
 	ProjectSection(ProjectDependencies) = postProject
 		{AE4FABFF-BE21-4B47-8655-7A767B1534B8} = {AE4FABFF-BE21-4B47-8655-7A767B1534B8}
+		{B154F636-2DF4-427E-8772-8B663DB4A489} = {B154F636-2DF4-427E-8772-8B663DB4A489}
 	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "CPPUtils", "CPPUtils\CPPUtils.vcxproj", "{8850BD56-540C-4C4A-A8EC-F137AD4A6E2D}"
+EndProject
+Project("{6989167D-11E4-40FE-8C1A-2192A86A7E90}") = "Mathutils", "Mathutils\Mathutils.vfproj", "{B154F636-2DF4-427E-8772-8B663DB4A489}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -144,6 +147,14 @@ Global
 		{8850BD56-540C-4C4A-A8EC-F137AD4A6E2D}.Release|x64.Build.0 = Release|x64
 		{8850BD56-540C-4C4A-A8EC-F137AD4A6E2D}.Release|x86.ActiveCfg = Release|Win32
 		{8850BD56-540C-4C4A-A8EC-F137AD4A6E2D}.Release|x86.Build.0 = Release|Win32
+		{B154F636-2DF4-427E-8772-8B663DB4A489}.Debug|x64.ActiveCfg = Debug|x64
+		{B154F636-2DF4-427E-8772-8B663DB4A489}.Debug|x64.Build.0 = Debug|x64
+		{B154F636-2DF4-427E-8772-8B663DB4A489}.Debug|x86.ActiveCfg = Debug|Win32
+		{B154F636-2DF4-427E-8772-8B663DB4A489}.Debug|x86.Build.0 = Debug|Win32
+		{B154F636-2DF4-427E-8772-8B663DB4A489}.Release|x64.ActiveCfg = Release|x64
+		{B154F636-2DF4-427E-8772-8B663DB4A489}.Release|x64.Build.0 = Release|x64
+		{B154F636-2DF4-427E-8772-8B663DB4A489}.Release|x86.ActiveCfg = Release|Win32
+		{B154F636-2DF4-427E-8772-8B663DB4A489}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
