@@ -7,7 +7,7 @@ type RigidOffset_t
     real(kind=8), dimension(3) :: offset = (/0.0,0.0,0.0/)
 end type RigidOffset_t
 
-    contains
+contains
     
 !-------------------------------------------
 

@@ -17,7 +17,7 @@ type Node_t
 end type Node_t
 
 type NodePointer_t
-    type(Node_t), pointer :: ptr
+    type(Node_t), pointer :: ptr => null()
 end type NodePointer_t
 
 !--------------------------------------------------------

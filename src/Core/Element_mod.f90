@@ -38,7 +38,7 @@ abstract interface
 end interface
 
 type ElementPointer_t
-    class(Element_t), pointer :: ptr
+    class(Element_t), pointer :: ptr => null()
 end type ElementPointer_t
 
 contains
