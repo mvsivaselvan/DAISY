@@ -6,5 +6,8 @@
 # Directories containing binaries
 **/x64/
 
+# Visual Studio cache directory
+**/.vs/
+
 # MATLAB related
 *.asv

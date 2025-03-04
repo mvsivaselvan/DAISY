@@ -50,11 +50,12 @@
 		<Filter Name="Header Files" Filter="fi;fd"/>
 		<Filter Name="Resource Files" Filter="rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe"/>
 		<Filter Name="Source Files" Filter="f90;for;f;fpp;ftn;def;odl;idl">
-		<File RelativePath="..\..\Core\BoundaryCondition.f90"/>
-		<File RelativePath="..\..\Core\Domain_mod.f90"/>
-		<File RelativePath="..\..\Core\Element_mod.f90"/>
-		<File RelativePath="..\..\Core\Node_mod.f90"/>
-		<File RelativePath="..\..\Core\RigidOffset_mod.f90"/></Filter>
+			<File RelativePath="..\..\Core\Domain_mod.f90">
+			</File>
+			<File RelativePath="..\..\Core\Element_mod.f90"/>
+			<File RelativePath="..\..\Core\Node_mod.f90"/>
+			<File RelativePath="..\..\Core\RigidOffset_mod.f90"/>
+		</Filter>
 		<File RelativePath="..\..\Core\destroy_map_generic.inc"/>
 	</Files>
 	<Globals/>
